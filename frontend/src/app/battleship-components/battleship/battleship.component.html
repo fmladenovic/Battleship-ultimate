@@ -1,0 +1,15 @@
+
+<div 
+    class= "battleship"
+    [ngClass] = "{
+        'selected': status == false,
+        'disabled': status == true
+    }"
+>
+    <img [src] = "src" [alt]="battleshipType">
+    <table border="1">
+        <tr>
+            <td></td> <td></td> <td></td> <td></td> <td></td>
+        </tr>
+    </table>
+</div>

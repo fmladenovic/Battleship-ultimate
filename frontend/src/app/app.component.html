@@ -1,0 +1,57 @@
+<div class="wrapper">
+    <div class="row ">
+        <div class="col-md-1"></div>
+
+        <div class="col-md-2 story-wrapper">
+            <div class="story">
+                <div class="upper">
+                    <p>
+                        Prepare for battle!
+                    </p>
+                </div>
+                <div class="lower">
+                    <app-battleships
+                        (chosenShip) = "onChosenShip($event)"
+                        [setShip] = "setShip"
+                    > 
+                    </app-battleships>
+                    <app-directions
+                        (chosenDirection) = "onChosenDirection($event)"
+                    > 
+                    </app-directions>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8 content-wrapper">
+            <div class="content">
+
+                <div class="player-first-phase" *ngIf = "false">  
+                    <app-board-first-phase
+                        [ship] = "ship"
+                        [direction] = "direction"
+                        (setShip) = "onSetShip($event)"
+                    >
+                    </app-board-first-phase>
+                </div>
+
+
+
+
+                <div class="computer" *ngIf = "true">
+                    <app-board-second-phase
+                        [player] = "'computer'"
+                    >
+                    </app-board-second-phase>
+                </div>
+
+                <div class="player" *ngIf = "true">
+                    <app-board-second-phase
+                        [player] = "'player'"
+                    >
+                    </app-board-second-phase>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-1"></div>
+    </div>
+</div>

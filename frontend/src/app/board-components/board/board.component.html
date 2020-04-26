@@ -1,0 +1,19 @@
+<table border="1">
+    <tr 
+        *ngFor = "let row of rows"
+    >
+        <td 
+            [ngClass] = "{ 
+                taken: fieldStatus(row, column) === 'taken',
+                error: fieldStatus(row, column)  === 'error',
+                marked: fieldStatus(row, column)  === 'marked',
+                default: fieldStatus(row, column)  === 'default'
+            }"
+            (mouseenter) = "onMouseEnter(row, column)"
+            (mouseleave) = "onMouseLeave()"
+            (click) = "onClick()"
+            *ngFor = "let column of columns"
+        >
+        </td>
+      </tr>
+</table>

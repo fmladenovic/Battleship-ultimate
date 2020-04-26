@@ -1,0 +1,41 @@
+.directions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+img {
+    width: 25px;
+    height: 25px;
+}
+
+img {
+    cursor: pointer;
+    padding: 3px;
+    opacity: 0.8;
+}
+
+img:hover {
+    border-style: solid;
+    border-width: 1px;
+    border-color: lightgray;
+    border-radius: 3px;
+}
+
+img.selected {
+    background-color: rgb(33, 204, 246, 0.2);
+    border-style: solid;
+    border-width: 1px;
+    border-color: white;
+    border-radius: 3px;
+    opacity: 1;
+
+}
+
+img.disabled,  img.disabled:hover{
+    border: none;
+    opacity: 0.6;
+    cursor: default;
+}
+

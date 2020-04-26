@@ -1,0 +1,61 @@
+
+table {
+    border-width: 5px;
+    border-color: white;
+    border-style: solid;
+}
+
+table td {
+    height: 1.75vw;
+    width: 1.75vw;
+}
+
+
+.disabled {
+    background-color: white;
+    opacity: 0.7;
+}
+
+.disabled:hover {
+    background-color: white;
+    opacity: 0.8;
+}
+
+.computer-hit {
+    background-color: red;
+    opacity: 0.7;
+}
+
+
+.computer-hit:hover {
+    background-color: red;
+    opacity: 0.8;
+}
+
+.player-hit {
+    background-color: rgb(0, 190, 0);
+    opacity: 0.7;
+}
+
+
+.player-hit:hover {
+    background-color: rgb(0, 190, 0);
+    opacity: 0.8;
+}
+
+
+.error {
+    background-color: red;
+    opacity: 0.8;
+
+}
+
+.marked {
+    background-color: rgb(33, 204, 246);
+    opacity: 0.3;
+}
+
+.taken {
+    background-color: rgb(0, 190, 0);
+    opacity: 0.7;
+}
