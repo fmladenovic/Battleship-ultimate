@@ -1,0 +1,17 @@
+<form (ngSubmit)="onSubmit()">
+
+    <!-- <img src= "../../../assets/images/logo.png"> -->
+
+
+    <hr>
+    
+    <div class="form-group">
+        <input class="form-control"  type="text" placeholder="Email" [(ngModel)] = "credential.email" [ngModelOptions]="{standalone: true}"/>
+    </div>
+    <div class="form-group">
+        <input  class="form-control" type="password" placeholder="Password" [(ngModel)] = "credential.password" [ngModelOptions]="{standalone: true}"/>  
+    </div>
+    <div class="form-group">
+        <button class="btn btn-outline-primary">Sing In</button>
+    </div>
+</form>

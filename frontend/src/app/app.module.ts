@@ -1,10 +1,14 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BoardComponentsModule } from './board-components/board-components.module';
 import { BattleshipComponentsModule } from './battleship-components/battleship-components.module';
+import { GameComponentsModule } from './game-components/game-components.module';
+import { AuthComponentsModule } from './auth-components/auth-components.module';
 
 @NgModule({
   declarations: [
@@ -13,6 +17,10 @@ import { BattleshipComponentsModule } from './battleship-components/battleship-c
   imports: [
     BrowserModule,
     AppRoutingModule,
+    FormsModule,
+
+    GameComponentsModule,
+    AuthComponentsModule,
 
     BoardComponentsModule,
     BattleshipComponentsModule

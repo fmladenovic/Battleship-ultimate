@@ -1,0 +1,26 @@
+<div class="page-wrapper">
+    <div class="container" id="container" [ngClass] = "{'right-panel-active' : slide ? true : false}">
+        <div class="form-container sign-up-container">
+            <app-signup (signUp) = "onSignUp($event)"></app-signup>
+        </div>
+        <div class="form-container sign-in-container" *ngIf = "!slide" >
+            <app-signin (signIn) = "onSignIn($event)"></app-signin>
+        </div>
+        <div class="overlay-container">
+            <div class="overlay">
+                <div class="overlay-panel overlay-left">
+                    <h1>Welcome Back!</h1>
+                    <p>
+                        To keep connected with us please login with your personal info
+                    </p>
+                    <button class="btn btn-outline-light" id="signIn" (click) = "onSlide()">Sign In</button>
+                </div>
+                <div class="overlay-panel overlay-right">
+                    <h1>Hello, Friend!</h1>
+                    <p>Enter your personal details and enter the battle!</p>
+                    <button class="btn btn-outline-light" id="signUp" (click) = "onSlide()">Sign Up</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
