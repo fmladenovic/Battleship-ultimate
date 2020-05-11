@@ -69,7 +69,7 @@ export class BoardComponent implements OnInit {
 
 
   isTupleOnTable( tuple: Tuple ) {
-    if ( (0 <= tuple.i && tuple.i < this.n) && ( 0 <= tuple.j && tuple.j < this.m )) {
+    if ( (0 <= tuple.x && tuple.x < this.n) && ( 0 <= tuple.y && tuple.y < this.m )) {
       return true;
     }
     return false;

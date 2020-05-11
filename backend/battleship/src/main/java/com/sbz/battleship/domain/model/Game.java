@@ -20,12 +20,14 @@ public class Game {
 
     @Id
     private UUID id;
-    @DBRef
-    private Player player;
+    private UUID playerId;
 
     private List<Move> playerMoves;
     private Ships computerShips;
 
     private List<Move> computerMoves;
     private Ships playerShips;
+
+    private Boolean winner; // true computer, false player
+
 }

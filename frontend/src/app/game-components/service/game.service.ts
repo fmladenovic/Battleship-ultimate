@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 import { Game } from 'src/app/shared/model/game';
+import { Ship } from 'src/app/shared/model/ship';
 
 @Injectable({
   providedIn: 'root'
@@ -43,7 +44,14 @@ export class GameService {
     this.gameOb.next(this.gameHolder);
   }
 
-  
+  addShip( ship: Ship ) {
+    this.gameHolder.playerShips.push(ship);
+    this.setGame(this.gameHolder);
+  }
+
+  putGame() {
+    //todo http request
+  }  
 
 
 

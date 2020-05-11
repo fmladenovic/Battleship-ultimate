@@ -1,1 +1,39 @@
-<p>game-phase-two works!</p>
+<div class="wrapper">
+    <div class="row ">
+        <div class="col-md-1"></div>
+
+        <div class="col-md-2 story-wrapper">
+            <div class="story">
+                <div class="upper">
+                    <p>
+                        Generate title!
+                    </p>
+                </div>
+                <div class="lower">
+                    <p>
+                        Random generated message!
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8 content-wrapper">
+            <div class="content">
+
+                <div class="computer">
+                    <app-board-second-phase
+                        [player] = "'computer'"
+                    >
+                    </app-board-second-phase>
+                </div>
+
+                <div class="player">
+                    <app-board-second-phase
+                        [player] = "'player'"
+                    >
+                    </app-board-second-phase>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-1"></div>
+    </div>
+</div>

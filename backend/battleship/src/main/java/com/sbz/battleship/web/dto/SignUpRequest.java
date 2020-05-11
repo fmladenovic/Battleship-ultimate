@@ -9,5 +9,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class GameRequest {
+public class SignUpRequest {
+
+    private String email;
+    private String nick;
+    private String password;
 }

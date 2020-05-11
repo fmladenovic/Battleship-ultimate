@@ -1,15 +1,15 @@
 export class Tuple {
 
     constructor(
-        public i: number,
-        public j: number
+        public x: number,
+        public y: number
         ) {}
 
-    equals( i: number, j: number) {
-        return this.i === i && this.j === j;
+    equals( x: number, y: number) {
+        return this.x === x && this.y === y;
     }
 
     equalsT( tuple: Tuple) {
-        return this.i === tuple.i && this.j === tuple.j;
+        return this.x === tuple.x && this.y === tuple.y;
     }
 }

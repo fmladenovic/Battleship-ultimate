@@ -1,11 +1,12 @@
 package com.sbz.battleship.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.mongodb.lang.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -26,6 +27,6 @@ public class Player {
     private String nick;
     private String password;
 
-    @DBRef
+    @DBRef(lazy = true)
     private List<Game> games;
 }

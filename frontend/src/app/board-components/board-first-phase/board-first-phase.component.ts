@@ -2,6 +2,9 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { Tuple } from 'src/app/shared/tuple';
 
 import Swal from 'sweetalert2';
+import { GameService } from 'src/app/game-components/service/game.service';
+import { Ship } from 'src/app/shared/model/ship';
+import { Game } from 'src/app/shared/model/game';
 
 
 @Component({
@@ -27,7 +30,9 @@ export class BoardFirstPhaseComponent implements OnInit {
 
   error = false;
 
-  constructor() { }
+  constructor(
+    private gameService: GameService
+  ) { }
 
   ngOnInit() {
     for (let i = 0; i < this.n; i++) {
@@ -136,18 +141,26 @@ export class BoardFirstPhaseComponent implements OnInit {
 
   onClick() {
     if (this.ship[0] === -1) {
-      Swal.fire(
-        'Ooops!',
-        'First phase is over!',
-        'error'
-      );
+      // Swal.fire(
+      //   'Ooops!',
+      //   'First phase is over!',
+      //   'error'
+      // );
+      this.gameService.nextPhase();
       return;
     }
 
     if (!this.error) {
+
+      const ship = new Ship();
+      ship.positions = this.currentMarked;
+      ship.size = this.currentMarked.length;
+      this.gameService.addShip(ship);
+
       this.currentMarked.forEach( tuple => this.takenTuples.push(tuple));
       this.currentMarked = [];
       this.setShip.emit(this.ship[0]);
+
     } else {
       Swal.fire(
         'Ooops!',

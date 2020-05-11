@@ -6,6 +6,8 @@ import { GamePhaseSignComponent } from './game-phase-sign/game-phase-sign.compon
 import { GameComponent } from './game/game.component';
 import { AuthComponentsModule } from '../auth-components/auth-components.module';
 import { GameService } from './service/game.service';
+import { BoardComponentsModule } from '../board-components/board-components.module';
+import { BattleshipComponentsModule } from '../battleship-components/battleship-components.module';
 
 
 
@@ -21,7 +23,10 @@ import { GameService } from './service/game.service';
   ],
   imports: [
     CommonModule,
-    AuthComponentsModule
+    AuthComponentsModule,
+
+    BoardComponentsModule,
+    BattleshipComponentsModule
   ],
   providers: [
     GameService

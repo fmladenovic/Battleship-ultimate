@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { GameService } from '../service/game.service';
+import { Game } from 'src/app/shared/model/game';
 
 @Component({
   selector: 'app-game',
@@ -9,6 +10,7 @@ import { GameService } from '../service/game.service';
 export class GameComponent implements OnInit {
 
   phases: boolean[];
+  game: Game;
 
   constructor(
     private gameService: GameService
@@ -16,6 +18,7 @@ export class GameComponent implements OnInit {
 
   ngOnInit(): void {
     this.gameService.phases.subscribe( data => this.phases = data );
+    this.gameService.game.subscribe( data => this.game = data );
     
   }
 
