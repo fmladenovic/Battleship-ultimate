@@ -2,6 +2,10 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Tuple } from 'src/app/shared/tuple';
 
 import Swal from 'sweetalert2';
+import { Ships } from 'src/app/shared/model/ships';
+import { GameService } from 'src/app/game-components/service/game.service';
+import { Move } from 'src/app/shared/model/move';
+import { GameStatus } from 'src/app/shared/model/game-status';
 
 
 @Component({
@@ -17,43 +21,36 @@ export class BoardSecondPhaseComponent implements OnInit {
   rows = [];
   columns = [];
 
-  @Input() player: string;
-  @Input() ships: Tuple[];
+  @Input() player: string; // who own table
+  @Input() ships: Ships;
 
-  triedFileds: Tuple[];
+  triedMoves: Move[];
+
 
   error = false;
 
+  gameStatus: GameStatus;
 
-  constructor() { }
+
+  constructor(
+    private gameService: GameService
+  ) { }
 
   ngOnInit() {
-    this.ships = [];
-    this.ships.push(
-      new Tuple(0, 0),
-      new Tuple(0, 1),
-      new Tuple(0, 2),
-      new Tuple(0, 3),
-      new Tuple(0, 4),
+    if( this.player === 'player' ) {
+      this.gameService.game.subscribe( data => this.ships = data.playerShips );
+    } else {
+      this.gameService.game.subscribe( data => this.ships = data.computerShips );
+    }
+    
+    if ( this.player === 'player' ) {
+      this.gameService.game.subscribe( data => this.triedMoves = data.computerMoves );
+    } else {
+      this.gameService.game.subscribe( data => this.triedMoves = data.playerMoves );
+    }
 
-      new Tuple(1, 0),
-      new Tuple(2, 0),
-      new Tuple(3, 0),
-      new Tuple(4, 0),
+    this.gameService.gameStatus.subscribe( data => this.gameStatus = data );
 
-      new Tuple(9, 0),
-      new Tuple(9, 1),
-      new Tuple(9, 2),
-
-      new Tuple(5, 0),
-      new Tuple(5, 1),
-      new Tuple(5, 2),
-
-      new Tuple(8, 0),
-      new Tuple(8, 1)
-    );
-
-    this.triedFileds = [];
 
     for (let i = 0; i < this.n; i++) {
       this.rows.push(i);
@@ -65,20 +62,42 @@ export class BoardSecondPhaseComponent implements OnInit {
   }
 
   onClick(i: number, j: number) {
-    if ( this.error || this.player === 'player') {
+    if ( this.gameStatus.status === 'miss' ) {
+      return;
+    }
+
+    if ( this.player === 'player' ) {
       Swal.fire(
         'Ooops!',
-        'Something went wrong xD!',
+        'Computer should perform move!',
         'error'
       );
       return;
     }
-    this.triedFileds.push(new Tuple(i, j));
+    if ( this.error ) {
+      Swal.fire(
+        'Ooops!',
+        'Field is already chosen!',
+        'error'
+      );
+      return;
+    }
+    const isHit = this.isInShips(i, j);
+
+    const move = new Move();
+    move.position = new Tuple(i, j);
+    move.hit = isHit;
+    move.region = 'PLAYER';
+    move.strategy = 'PLAYER';
+
+    this.gameService.addPlayerMove(move);
+    if ( !isHit ) {
+      this.gameService.computerTurn();
+    }
   }
 
   onMouseEnter( i: number, j: number ) {
-    this.error = this.isInTriedFileds(i, j);
-    console.log(this.error);
+    this.error = this.isInTriedMoves(i, j);
   }
 
   onMouseLeave() {
@@ -88,20 +107,20 @@ export class BoardSecondPhaseComponent implements OnInit {
 
   fieldStatus( i: number, j: number) {
     const isInShips = this.isInShips(i, j);
-    const isInTriedFileds = this.isInTriedFileds(i, j);
+    const isInTriedMove = this.isInTriedMoves(i, j);
 
     if ( this.player === 'player' ) {
-      if ( isInShips && isInTriedFileds ) {
+      if ( isInShips && isInTriedMove ) {
         return 'computer-hit';
-      } else if ( isInTriedFileds ) {
+      } else if ( isInTriedMove ) {
         return 'disabled';
       } else {
         return 'default-p'; // check this
       }
     } else {
-      if ( isInShips && isInTriedFileds ) {
+      if ( isInShips && isInTriedMove ) {
         return 'player-hit';
-      } else if ( isInTriedFileds ) {
+      } else if ( isInTriedMove ) {
         return 'disabled';
       } else {
         return 'default';
@@ -109,9 +128,18 @@ export class BoardSecondPhaseComponent implements OnInit {
     }
   }
 
-  isInTriedFileds( i: number, j: number ) {
-    for ( const tuple of this.triedFileds ) {
-      if (tuple.equals(i, j)) {
+  // isInTriedFileds( i: number, j: number ) {
+  //   for ( const tuple of this.triedFileds ) {
+  //     if ( tuple.x === i && tuple.y === j ) {
+  //       return true;
+  //     }
+  //   }
+  //   return false;
+  // }
+
+  isInTriedMoves( i: number, j: number ) {
+    for ( const move of this.triedMoves ) {
+      if ( move.position.x === i && move.position.y === j ) {
         return true;
       }
     }
@@ -119,9 +147,11 @@ export class BoardSecondPhaseComponent implements OnInit {
   }
 
   isInShips( i: number, j: number ) {
-    for ( const tuple of this.ships ) {
-      if (tuple.equals(i, j)) {
-        return true;
+    for ( const ship of this.ships.ships ) {
+      for ( const tuple of ship.positions) {
+        if(tuple.x === i && tuple.y === j) {
+          return true;
+        }
       }
     }
     return false;

@@ -3,6 +3,7 @@ import { SignupRequest } from 'src/app/shared/dto/signup-request';
 import { SigninRequest } from 'src/app/shared/dto/signin-request';
 
 import { AuthService } from '../service/auth.service';
+import { GameService } from 'src/app/game-components/service/game.service';
 
 
 @Component({
@@ -15,7 +16,7 @@ export class SignComponent implements OnInit {
   slide: boolean;
 
   constructor(
-    private authService: AuthService
+    private gameService: GameService
   ) { }
 
   ngOnInit(): void {
@@ -24,11 +25,20 @@ export class SignComponent implements OnInit {
   }
 
   onSignUp($event: SignupRequest) {
-    this.authService.signUp($event);
+    this.gameService.signup($event).subscribe(
+      succes => {
+        this.gameService.successMessage('You have sign up successfully');
+        this.slide = false;
+      },
+      error => {
+        this.gameService.errorMessage(error.error.message)
+        this.slide = true;
+      } 
+    );
   }
 
   onSignIn($event: SigninRequest) {
-    this.authService.signIn($event);
+    this.gameService.signin($event);
   }
 
   onSlide() {

@@ -6,12 +6,12 @@
             <div class="story">
                 <div class="upper">
                     <p>
-                        Generate title!
+                        {{extractMessage()[0]}}
                     </p>
                 </div>
                 <div class="lower">
                     <p>
-                        Random generated message!
+                       {{extractMessage()[1]}}
                     </p>
                 </div>
             </div>
@@ -19,19 +19,25 @@
         <div class="col-md-8 content-wrapper">
             <div class="content">
 
-                <div class="computer">
-                    <app-board-second-phase
-                        [player] = "'computer'"
-                    >
-                    </app-board-second-phase>
+                <app-board-second-phase
+                    *ngIf = "gameStatus.turn === 'player' && !showSpinner"
+                    [player] = "gameStatus.turn === 'player' ? 'computer' : 'player'"
+                >
+                </app-board-second-phase>
+
+                
+                <app-board-second-phase
+                    *ngIf = "gameStatus.turn === 'computer' && !showSpinner"
+                    [player] = "gameStatus.turn === 'computer' ? 'player' : 'computer'"
+                >
+                </app-board-second-phase>
+
+                <div class="spinner-wrapper" *ngIf = "showSpinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
                 </div>
 
-                <div class="player">
-                    <app-board-second-phase
-                        [player] = "'player'"
-                    >
-                    </app-board-second-phase>
-                </div>
             </div>
         </div>
         <div class="col-md-1"></div>

@@ -116,3 +116,10 @@
 .lower {
     height: auto;
 }
+
+input {
+    margin-top: 15px;
+    width: 75%;
+    height: auto;
+    transform: translateX(20%);
+}

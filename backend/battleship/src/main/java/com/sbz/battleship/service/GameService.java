@@ -14,8 +14,13 @@ public interface GameService {
     void addComputerMove(String id) throws NotFound, BadRequest;
     void addPlayerMove(String id, Tuple tuple) throws NotFound, BadRequest;
 
+
     void addComputerShips(String id) throws NotFound, BadRequest;
     void addPlayerShips(String id, List<Ship> ships) throws NotFound, BadRequest;
+
+
+    void addPlayerMoves(String id, List<Move> moves) throws NotFound, BadRequest;
+
 
 
 }

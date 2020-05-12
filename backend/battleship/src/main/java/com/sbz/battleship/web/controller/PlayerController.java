@@ -14,7 +14,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
-@RequestMapping(value = "api/player")
+@RequestMapping(value = "api/players")
 public class PlayerController {
 
     private final PlayerService playerService;

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { GameService } from '../service/game.service';
 
 @Component({
   selector: 'app-game-phase-one',
@@ -13,7 +14,9 @@ export class GamePhaseOneComponent implements OnInit {
 
   setShip = -1;
 
-  constructor() { }
+  constructor(
+    private gameService: GameService
+  ) { }
 
   ngOnInit() {
   }
@@ -28,6 +31,10 @@ export class GamePhaseOneComponent implements OnInit {
 
   onSetShip($event: number) {
     this.setShip = $event;
+  }
+
+  onNext() {
+    this.gameService.setShips();
   }
 
 }

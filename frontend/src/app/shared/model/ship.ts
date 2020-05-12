@@ -6,5 +6,4 @@ export class Ship {
     size: number;
 
     constructor() { }
-
 }

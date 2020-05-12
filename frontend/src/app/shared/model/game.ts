@@ -1,6 +1,7 @@
 import { Player } from './player';
 import { Ship } from './ship';
 import { Move } from './move';
+import { Ships } from './ships';
 
 
 export class Game {
@@ -9,15 +10,13 @@ export class Game {
     player: Player;
 
     playerMoves: Move[]; 
-    computerShips: Ship[];
+    computerShips: Ships;
 
     computerMoves: Move[]; 
-    playerShips: Ship[];
+    playerShips: Ships;
 
     constructor() {
         this.playerMoves = []; 
-        this.computerShips = [];
         this.computerMoves = []; 
-        this.playerShips = []; 
     }
 }

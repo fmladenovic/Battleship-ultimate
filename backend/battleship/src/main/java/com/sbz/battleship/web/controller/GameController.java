@@ -2,8 +2,11 @@ package com.sbz.battleship.web.controller;
 
 import com.sbz.battleship.domain.exception.BadRequest;
 import com.sbz.battleship.domain.exception.NotFound;
+import com.sbz.battleship.domain.model.Move;
 import com.sbz.battleship.domain.model.Ship;
 import com.sbz.battleship.domain.model.Tuple;
+import com.sbz.battleship.domain.model.enums.Region;
+import com.sbz.battleship.domain.model.enums.Strategy;
 import com.sbz.battleship.service.GameService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -59,18 +62,30 @@ public class GameController {
     }
 
     @RequestMapping(
-            path= "/{id}/move",
+            path= "/{id}/moves",
             method = RequestMethod.PUT,
             produces = MediaType.TEXT_PLAIN_VALUE
     )
     public ResponseEntity<?> addPlayerMove(
             @PathVariable String id,
-            @RequestBody Tuple tuple
+            @RequestBody List<Move> moves
     ) throws NotFound, BadRequest {
-        this.gameService.addPlayerMove(id, tuple);
+        this.gameService.addPlayerMoves(id, moves);
         return ResponseEntity.ok("");
     }
 
+
+    @RequestMapping(
+            path= "/{id}/computer",
+            method = RequestMethod.PUT,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<?> computerPlay(
+            @PathVariable String id
+    ) throws NotFound, BadRequest {
+        Move move = new Move(new Tuple(1, 1), false, Strategy.INITIAL, Region.INITIAL);
+        return ResponseEntity.ok(move);
+    }
 
 
 

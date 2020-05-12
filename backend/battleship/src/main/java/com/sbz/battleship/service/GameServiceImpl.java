@@ -73,11 +73,24 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
+    public void addPlayerMoves(String id, List<Move> moves) throws NotFound, BadRequest {
+        Game game = this.getByIdFromRepo(id);
+
+        // TODO VALIDATE DATA
+
+        game.getPlayerMoves().addAll(moves);
+        this.gameRepository.save(game);
+    }
+
+
+    @Override
     public void addPlayerShips(String id, List<Ship> ships) throws NotFound, BadRequest {
         Game game = this.getByIdFromRepo(id);
         game.setPlayerShips(new Ships(Formation.PLAYER, ships));
         this.gameRepository.save(game);
     }
+
+
 
     private Game getByIdFromRepo(String sid) throws NotFound, BadRequest {
         UUID id = null;

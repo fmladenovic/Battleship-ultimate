@@ -18,6 +18,14 @@
                         (chosenDirection) = "onChosenDirection($event)"
                     > 
                     </app-directions>
+                    <input 
+                        *ngIf = "ship[0] === -1"  
+                        type = "button" 
+                        class = "btn btn-outline-primary btn-sml" 
+                        value = "Next"
+                        (click) = "onNext()"
+                    >
+
                 </div>
             </div>
         </div>

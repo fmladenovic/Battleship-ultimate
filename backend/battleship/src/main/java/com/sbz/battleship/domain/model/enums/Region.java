@@ -1,5 +1,6 @@
 package com.sbz.battleship.domain.model.enums;
 
 public enum Region {
-    PLAYER
+    PLAYER,
+    INITIAL
 }

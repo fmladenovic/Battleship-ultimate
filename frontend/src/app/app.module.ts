@@ -9,6 +9,7 @@ import { BoardComponentsModule } from './board-components/board-components.modul
 import { BattleshipComponentsModule } from './battleship-components/battleship-components.module';
 import { GameComponentsModule } from './game-components/game-components.module';
 import { AuthComponentsModule } from './auth-components/auth-components.module';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -18,6 +19,8 @@ import { AuthComponentsModule } from './auth-components/auth-components.module';
     BrowserModule,
     AppRoutingModule,
     FormsModule,
+    HttpClientModule,
+
 
     GameComponentsModule,
     AuthComponentsModule,

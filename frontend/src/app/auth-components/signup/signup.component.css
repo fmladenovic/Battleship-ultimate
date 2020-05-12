@@ -13,3 +13,18 @@ input:focus {
     background-color: rgb(0, 0, 0, 0.4);
     color: white;
 }
+
+button {
+    opacity: 0.85;
+}
+
+.message-p {
+    float: right;
+    font-size: 11px;
+    color: red;
+}
+
+.form-group {
+    height: 63px;
+    margin-bottom: 5px;
+}
