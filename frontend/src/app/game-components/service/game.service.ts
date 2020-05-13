@@ -127,7 +127,7 @@ export class GameService {
             this.spinnerService.hideSpinner();
             this.addComputerMove(success);
             if ( success.hit ) {
-              this.computerPlay();
+              this.delay(1500).then( () => this.computerPlay());
             } else {
               this.playerPlay();
             }

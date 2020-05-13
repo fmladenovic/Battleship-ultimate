@@ -83,8 +83,7 @@ public class GameController {
     public ResponseEntity<?> computerPlay(
             @PathVariable String id
     ) throws NotFound, BadRequest {
-        Move move = new Move(new Tuple(1, 1), false, Strategy.INITIAL, Region.INITIAL);
-        return ResponseEntity.ok(move);
+        return ResponseEntity.ok(this.gameService.addComputerMove(id));
     }
 
 

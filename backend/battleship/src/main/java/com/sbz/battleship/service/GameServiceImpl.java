@@ -38,10 +38,13 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public void addComputerMove(String id) throws NotFound, BadRequest {
+    public Move addComputerMove(String id) throws NotFound, BadRequest {
         Game game = this.getByIdFromRepo(id);
-        // game.getComputerMoves().add(move);
+        Move move = Strategy.generateMove(Strategy.EVERY_SECOND_HORIZONTAL, Region.LEFT_TOP_MIDDLE, game.getComputerMoves());
+        game.getComputerMoves().add(move);
+        move.setHit(this.isShipHit(move.getPosition(), game.getPlayerShips()));
         this.gameRepository.save(game);
+        return move;
     }
 
     @Override
@@ -52,25 +55,7 @@ public class GameServiceImpl implements GameService {
     }
 
 
-    // TODO CHANGE METHOD - FRONTEND VS BACKEND
-    @Override
-    public void addPlayerMove(String id, Tuple tuple) throws NotFound, BadRequest {
-        Game game = this.getByIdFromRepo(id);
-        this.isOnBoard(tuple, X, Y);
 
-        Move move = new Move(tuple, false, Strategy.PLAYER, Region.PLAYER);
-        boolean hit = this.isBoatHit(tuple, game.getComputerShips());
-        move.setHit(hit);
-
-        if(hit) {
-            System.out.println("Player move");
-        } else {
-            System.out.println("Call computer move"); //TODO: REZONER!
-        }
-
-        game.getPlayerMoves().add(move);
-        this.gameRepository.save(game);
-    }
 
     @Override
     public void addPlayerMoves(String id, List<Move> moves) throws NotFound, BadRequest {
@@ -118,7 +103,7 @@ public class GameServiceImpl implements GameService {
         return true;
     }
 
-    private boolean isBoatHit(Tuple tuple, Ships ships) {
+    private boolean isShipHit(Tuple tuple, Ships ships) {
         List<Ship> shipList = ships.getShips();
         for( Ship ship : shipList ) {
              List<Tuple> positions = ship.getPositions();

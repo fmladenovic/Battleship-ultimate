@@ -11,8 +11,7 @@ public interface GameService {
     Iterable<Game> getAll();
     Game getById(String id) throws NotFound, BadRequest;
 
-    void addComputerMove(String id) throws NotFound, BadRequest;
-    void addPlayerMove(String id, Tuple tuple) throws NotFound, BadRequest;
+    Move addComputerMove(String id) throws NotFound, BadRequest;
 
 
     void addComputerShips(String id) throws NotFound, BadRequest;
@@ -20,6 +19,8 @@ public interface GameService {
 
 
     void addPlayerMoves(String id, List<Move> moves) throws NotFound, BadRequest;
+
+
 
 
 
