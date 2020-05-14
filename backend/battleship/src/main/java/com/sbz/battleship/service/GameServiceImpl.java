@@ -60,10 +60,16 @@ public class GameServiceImpl implements GameService {
     @Override
     public void addPlayerMoves(String id, List<Move> moves) throws NotFound, BadRequest {
         Game game = this.getByIdFromRepo(id);
-
         // TODO VALIDATE DATA
-
         game.getPlayerMoves().addAll(moves);
+        this.gameRepository.save(game);
+    }
+
+    @Override
+    public void endGame(String id, Boolean victory) throws NotFound, BadRequest {
+        Game game = this.getByIdFromRepo(id);
+        // TODO VALIDATE DATA
+        game.setWinner(victory);
         this.gameRepository.save(game);
     }
 

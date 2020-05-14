@@ -15,4 +15,6 @@ public interface PlayerService {
     Iterable<Player> getAll();
     Player getById(String id) throws NotFound, BadRequest;
 
+    GameDto playAgain(String playerId) throws BadRequest, NotFound;
+
 }

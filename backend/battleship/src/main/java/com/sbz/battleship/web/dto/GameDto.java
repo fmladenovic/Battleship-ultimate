@@ -22,4 +22,6 @@ public class GameDto {
     private Ships playerShips;
     private List<Move> computerMoves;
     private Ships computerShips;
+    private Boolean winner; // true computer, false player
+
 }

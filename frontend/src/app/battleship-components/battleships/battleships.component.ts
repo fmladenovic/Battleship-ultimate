@@ -43,7 +43,6 @@ export class BattleshipsComponent implements OnInit, OnChanges {
   }
 
   setStatus() {
-    console.log(this.setShip);
     if (this.setShip !== -1) {
       this.statuses[this.setShip] = true;
       for ( let i = 0; i < this.statuses.length; i++) {

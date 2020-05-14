@@ -53,9 +53,10 @@ public class PlayerController {
             @RequestBody SignUpRequest request
     ) throws BadRequest {
         Player player = this.playerService.create(request);
-        UriComponents url = UriComponentsBuilder.newInstance().path("/api/player/{id}").buildAndExpand(player.getId());
+        UriComponents url = UriComponentsBuilder.newInstance().path("/api/players/{id}").buildAndExpand(player.getId());
         return ResponseEntity.created(url.toUri()).build();
     }
+
 
     @RequestMapping(
             path= "",
@@ -67,6 +68,18 @@ public class PlayerController {
             @RequestBody SignInRequest request
     ) throws BadRequest, NotFound {
         GameDto game = this.playerService.signIn(request);
+        return ResponseEntity.ok(game);
+    }
+
+    @RequestMapping(
+            path= "/{id}/play-again",
+            method = RequestMethod.PUT,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<?> playAgain(
+            @PathVariable String id
+    ) throws BadRequest, NotFound {
+        GameDto game = this.playerService.playAgain(id);
         return ResponseEntity.ok(game);
     }
 

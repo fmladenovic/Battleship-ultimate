@@ -1,0 +1,19 @@
+<div class="wrapper">
+    <div class="row ">
+        <div class="col-md-3"></div>
+        <div class="col-md-6 content-wrapper">
+            <div class="content">
+                <div class="wrap">
+                    <p *ngIf = "win">You have won!</p>
+                    <p class ="def" *ngIf = "!win">You have defeated!</p>
+                    <hr>
+                    <div class = "buttons">
+                        <button class = "left btn btn-outline-primary" (click) = "onPlayAgainClick()">Play Again</button>
+                        <button class = "right btn btn-outline-light" (click) = "onSignOutClick()">Sign Out</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3"></div>
+    </div>
+</div>

@@ -8,6 +8,7 @@ import { AuthComponentsModule } from '../auth-components/auth-components.module'
 import { GameService } from './service/game.service';
 import { BoardComponentsModule } from '../board-components/board-components.module';
 import { BattleshipComponentsModule } from '../battleship-components/battleship-components.module';
+import { GamePhaseEndComponent } from './game-phase-end/game-phase-end.component';
 
 
 
@@ -16,7 +17,8 @@ import { BattleshipComponentsModule } from '../battleship-components/battleship-
     GamePhaseOneComponent, 
     GamePhaseTwoComponent, 
     GamePhaseSignComponent,
-    GameComponent
+    GameComponent,
+    GamePhaseEndComponent
   ],
   exports: [
     GameComponent

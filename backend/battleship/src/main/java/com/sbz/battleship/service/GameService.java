@@ -21,7 +21,7 @@ public interface GameService {
     void addPlayerMoves(String id, List<Move> moves) throws NotFound, BadRequest;
 
 
-
+    void endGame(String id, Boolean victory) throws NotFound, BadRequest;
 
 
 }

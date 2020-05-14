@@ -37,6 +37,8 @@ public class GameController {
         return ResponseEntity.ok(this.gameService.getAll());
     }
 
+
+
     @RequestMapping(
             path= "/{id}",
             method = RequestMethod.GET,
@@ -86,6 +88,18 @@ public class GameController {
         return ResponseEntity.ok(this.gameService.addComputerMove(id));
     }
 
-
-
+    @RequestMapping(
+            path= "/{id}/end-game",
+            method = RequestMethod.PUT,
+            produces = MediaType.TEXT_PLAIN_VALUE,
+            consumes = MediaType.ALL_VALUE
+    )
+    public ResponseEntity<?> endGame(
+            @PathVariable String id,
+            @RequestParam Boolean victory
+    ) throws NotFound, BadRequest {
+        this.gameService.endGame(id, victory);
+        return ResponseEntity.ok("");
+    }
+    
 }

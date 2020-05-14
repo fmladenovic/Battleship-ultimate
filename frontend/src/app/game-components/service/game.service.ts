@@ -22,8 +22,8 @@ const GAME = '/api/games'
 })
 export class GameService {
 
-  private phasesOb = new BehaviorSubject<boolean[]>([true, false, false]);
-  private phasesHolder = [true, false, false];
+  private phasesOb = new BehaviorSubject<boolean[]>([true, false, false, false]);
+  private phasesHolder = [true, false, false, false];
   phases = this.phasesOb.asObservable();
 
   
@@ -93,8 +93,13 @@ export class GameService {
     this.setGame(this.gameHolder);
 
     this.playerMovesInRow.push(move);
-
-    console.log(this.playerMovesInRow);
+    
+    if ( this.checkPlayerWin() ) {
+      this.setWin(true);
+      this.putPlayerMoves(this.playerMovesInRow);
+      this.playerMovesInRow = [];
+    }
+    
   }
 
 
@@ -118,7 +123,7 @@ export class GameService {
   }
 
   computerPlay() {
-    this.spinnerService.showSpinner();
+    // this.spinnerService.showSpinner(); Enable animation for bombing
     this.http.put<Move>(GAME + `/${this.gameHolder.id}/computer`, null)
     .subscribe(
       success => {
@@ -127,7 +132,13 @@ export class GameService {
             this.spinnerService.hideSpinner();
             this.addComputerMove(success);
             if ( success.hit ) {
-              this.delay(1500).then( () => this.computerPlay());
+              this.delay(1500).then( () => {
+                if ( this.checkComputerWin() ) {
+                  this.setWin(false);
+                } else {
+                  this.computerPlay();
+                }
+              });
             } else {
               this.playerPlay();
             }
@@ -138,29 +149,6 @@ export class GameService {
         this.spinnerService.hideSpinner();
       }
     );
-
-    // this.spinnerService.showSpinner();
-    // this.delay(2000)
-    // .then(
-    //   () => {
-    //     const move = new Move();
-    //     move.hit = false;
-    //     move.position = new Tuple(0, 0);
-    //     move.region = 'TOP_LEFT';
-    //     move.strategy = 'EVERY_TWO';
-    //     this.addComputerMove(move);
-    //     if ( move.hit ) {
-    //       this.computerPlay();
-    //     } else {
-    //       this.computerMissStatus();
-    //       this.playerPlay();
-    //     }
-    //     this.spinnerService.hideSpinner();
-
-    //   }
-    // );
-
-
   }
 
   playerPlay() {
@@ -174,14 +162,13 @@ export class GameService {
 
 
   putPlayerMoves( playerMovesInRow: Move[] ) {
-    // this.delay(2000)
-    // .then(
-    //   () => this.computerPlay()
-    // );
+
     this.http.put(GAME + `/${this.gameHolder.id}/moves`, playerMovesInRow)
     .subscribe(
       success => {        
-        this.delay(1500).then( () => this.computerPlay() );
+        if(this.gameHolder.winner === null) {
+          this.delay(1500).then( () => this.computerPlay() );
+        }
       },
       error => this.errorMessage(error.error.message)
     );
@@ -217,6 +204,33 @@ export class GameService {
       error => {
         this.errorMessage(error.error.message);
       } 
+    );
+  }
+
+  playAgain() {
+    this.http.put<Game>(PLAYER + `/${this.gameHolder.player.id}/play-again`, null)
+    .subscribe(
+      succes => {
+        this.setGame(succes);
+      },
+      error => {
+        this.errorMessage(error.error.message);
+      } 
+    );
+  }
+
+  setWin(value: boolean) {
+    // this.spinnerService.showSpinner(); Enable animation for bombing
+    this.http.put(GAME + `/${this.gameHolder.id}/end-game?victory=${value}`, null)
+    .subscribe(
+      success => {
+        this.gameHolder.winner = value;
+        this.nextPhase();
+      },
+      error => {
+        this.errorMessage(error.error.message);
+        this.spinnerService.hideSpinner();
+      }
     );
   }
 
@@ -272,6 +286,23 @@ export class GameService {
   }
 
 
+  checkPlayerWin() {
+    return this.isWin(this.gameHolder.playerMoves);
+  }
+
+  checkComputerWin() {
+    return this.isWin(this.gameHolder.computerMoves);
+  }
+
+  isWin(list: Move[]) {
+    let counter = 0;
+    list.forEach( move => {
+      if(move.hit){
+        counter++;
+      }
+    });
+    return counter === 17
+  }
 
   delay(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );

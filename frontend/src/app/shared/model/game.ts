@@ -15,6 +15,8 @@ export class Game {
     computerMoves: Move[]; 
     playerShips: Ships;
 
+    winner: boolean;
+
     constructor() {
         this.playerMoves = []; 
         this.computerMoves = []; 
