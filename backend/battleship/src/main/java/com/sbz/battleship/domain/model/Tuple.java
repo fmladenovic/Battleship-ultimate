@@ -1,6 +1,4 @@
 package com.sbz.battleship.domain.model;
-
-import com.sun.org.apache.xpath.internal.objects.XObject;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
