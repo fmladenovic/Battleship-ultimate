@@ -91,9 +91,6 @@ export class BoardSecondPhaseComponent implements OnInit {
     move.strategy = 'PLAYER';
 
     this.gameService.addPlayerMove(move);
-    if ( !isHit ) {
-      this.gameService.computerTurn();
-    }
   }
 
   onMouseEnter( i: number, j: number ) {

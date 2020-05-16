@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { GameService } from '../service/game.service';
+import { Game } from 'src/app/shared/model/game';
 
 @Component({
   selector: 'app-game-phase-end',
@@ -25,7 +26,7 @@ export class GamePhaseEndComponent implements OnInit {
 
   onSignOutClick() {
     this.gameService.setPhases([true, false, false, false]);
-    this.gameService.setGame(null);
+    this.gameService.setGame(new Game());
   }
 
 }

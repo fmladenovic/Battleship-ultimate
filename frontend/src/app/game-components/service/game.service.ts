@@ -66,7 +66,6 @@ export class GameService {
     this.gameStatusOb.next( this.gameStatusHolder );
   }
 
-
   setGame( value: Game ) {
     this.gameHolder = value;
     this.gameOb.next(this.gameHolder);
@@ -83,23 +82,18 @@ export class GameService {
   }
 
   addPlayerMove( move: Move ) {
-    if( move.hit ) {
-      this.playerHitStatus();
-    } else {
-      this.playerMissStatus();
-    }
-
+    this.playerMovesInRow.push(move);
     this.gameHolder.playerMoves.push(move);
     this.setGame(this.gameHolder);
 
-    this.playerMovesInRow.push(move);
-    
-    if ( this.checkPlayerWin() ) {
-      this.setWin(true);
-      this.putPlayerMoves(this.playerMovesInRow);
-      this.playerMovesInRow = [];
+    if( move.hit ) {
+      this.playerHitStatus();
+      this.onWin();
+    } else {
+      this.playerMissStatus();
+      this.putPlayerMoves();
+
     }
-    
   }
 
 
@@ -114,16 +108,10 @@ export class GameService {
     this.setGame(this.gameHolder);
   }
 
-  // SEND TO BACKEND // Send rowPlayerMoves, switch moves
-  computerTurn() {
-    this.delay(1500).then( () => {
-      this.computerPickStatus();
-      this.putPlayerMoves(this.playerMovesInRow);
-    });
-  }
 
   computerPlay() {
     // this.spinnerService.showSpinner(); Enable animation for bombing
+    this.computerPickStatus();
     this.http.put<Move>(GAME + `/${this.gameHolder.id}/computer`, null)
     .subscribe(
       success => {
@@ -140,7 +128,7 @@ export class GameService {
                 }
               });
             } else {
-              this.playerPlay();
+              this.delay(1500).then( () => this.playerPickStatus() );
             }
           });
       },
@@ -151,28 +139,54 @@ export class GameService {
     );
   }
 
-  playerPlay() {
-    this.delay(1500)
-    .then( () => {
-      this.playerMovesInRow = [];
-      this.playerPickStatus();
-    })
-  }
 
 
 
-  putPlayerMoves( playerMovesInRow: Move[] ) {
+  putPlayerMoves() {
 
-    this.http.put(GAME + `/${this.gameHolder.id}/moves`, playerMovesInRow)
+    this.http.put(GAME + `/${this.gameHolder.id}/moves`, this.playerMovesInRow)
     .subscribe(
-      success => {        
-        if(this.gameHolder.winner === null) {
+      success => {    
+          this.playerMovesInRow = [];
           this.delay(1500).then( () => this.computerPlay() );
-        }
       },
       error => this.errorMessage(error.error.message)
     );
+    
   }
+
+  setWin(value: boolean) {
+    // this.spinnerService.showSpinner(); Enable animation for bombing
+    this.http.put(GAME + `/${this.gameHolder.id}/end-game?victory=${value}`, null)
+    .subscribe(
+      success => {
+        this.gameHolder.winner = value;
+        this.nextPhase();
+      },
+      error => {
+        this.errorMessage(error.error.message);
+        this.spinnerService.hideSpinner();
+      }
+    );
+  }
+
+  onWin() {
+    if ( this.checkPlayerWin() ) {
+    this.http.put(GAME + `/${this.gameHolder.id}/moves`, this.playerMovesInRow)
+      .subscribe(
+        success => {    
+            this.playerMovesInRow = [];
+            this.setWin(true);
+        },
+        error => this.errorMessage(error.error.message)
+      );
+    }
+  }
+
+
+
+
+
 
 
   signup( value: SignupRequest ) {
@@ -219,20 +233,7 @@ export class GameService {
     );
   }
 
-  setWin(value: boolean) {
-    // this.spinnerService.showSpinner(); Enable animation for bombing
-    this.http.put(GAME + `/${this.gameHolder.id}/end-game?victory=${value}`, null)
-    .subscribe(
-      success => {
-        this.gameHolder.winner = value;
-        this.nextPhase();
-      },
-      error => {
-        this.errorMessage(error.error.message);
-        this.spinnerService.hideSpinner();
-      }
-    );
-  }
+
 
   
   successMessage( message: string ) {
@@ -250,6 +251,8 @@ export class GameService {
       'error'
     );
   }
+
+
 
 
   computerPickStatus() {

@@ -2,10 +2,10 @@ package com.sbz.battleship.service;
 
 import com.sbz.battleship.domain.exception.BadRequest;
 import com.sbz.battleship.domain.exception.NotFound;
-import com.sbz.battleship.domain.model.Game;
-import com.sbz.battleship.domain.model.Player;
-import com.sbz.battleship.domain.model.Ships;
+import com.sbz.battleship.domain.model.*;
 import com.sbz.battleship.domain.model.enums.Formation;
+import com.sbz.battleship.domain.model.enums.Region;
+import com.sbz.battleship.domain.model.enums.Strategy;
 import com.sbz.battleship.repository.GameRepository;
 import com.sbz.battleship.repository.PlayerRepository;
 import com.sbz.battleship.utility.Formations;
@@ -14,8 +14,6 @@ import com.sbz.battleship.web.dto.PlayerDto;
 import com.sbz.battleship.web.dto.SignInRequest;
 import com.sbz.battleship.web.dto.SignUpRequest;
 import org.springframework.stereotype.Service;
-
-import com.sbz.battleship.utility.Formations;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -52,7 +50,13 @@ public class PlayerServiceImpl implements PlayerService {
         if(this.playerRepository.findByNick(nick).size() != 0)
             throw new BadRequest("Player with given nick exists!");
 
-        Player player = new Player(UUID.randomUUID(), email, nick, password, new ArrayList<>());
+        Player player = new Player();
+        player.setId(UUID.randomUUID());
+        player.setEmail(email);
+        player.setNick(nick);
+        player.setPassword(password);
+        player.setGames(new ArrayList<>());
+
         return this.playerRepository.save(player);
     }
 

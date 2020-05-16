@@ -7,11 +7,10 @@ import com.sbz.battleship.domain.model.enums.Formation;
 import com.sbz.battleship.domain.model.enums.Region;
 import com.sbz.battleship.domain.model.enums.Strategy;
 import com.sbz.battleship.repository.GameRepository;
+import com.sbz.battleship.repository.PlayerRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class GameServiceImpl implements GameService {
@@ -19,11 +18,14 @@ public class GameServiceImpl implements GameService {
     public final int X = 14;
     public final int Y = 14;
 
+    private final PlayerRepository playerRepository;
     private final GameRepository gameRepository;
 
     public GameServiceImpl(
+            PlayerRepository playerRepository,
             GameRepository gameRepository
     ) {
+        this.playerRepository = playerRepository;
         this.gameRepository = gameRepository;
     }
 
@@ -68,8 +70,36 @@ public class GameServiceImpl implements GameService {
     @Override
     public void endGame(String id, Boolean victory) throws NotFound, BadRequest {
         Game game = this.getByIdFromRepo(id);
+        Player player = this.getPlayerByIdFromRepo(game.getPlayerId().toString());
+
+        player.setLastFirst5Strikes(
+                Arrays.asList(
+                    game.getPlayerMoves().get(0).getPosition(),
+                    game.getPlayerMoves().get(1).getPosition(),
+                    game.getPlayerMoves().get(2).getPosition(),
+                    game.getPlayerMoves().get(3).getPosition(),
+                    game.getPlayerMoves().get(4).getPosition()
+                )
+        );
+        player.setLastPlayShipsPositions(game.getPlayerShips().getShips());
+        player.setLastGameVictory(victory);
+
+
+        player.setComputerLastUsedFormation(game.getComputerShips().getFormation());
+
+        List<Game> games = player.getGames();
+        player.setCommonFirst5Strikes(this.commonFirst5Strikes(games));  //or maybe 10
+        player.setComputerMostUsedFormations(this.extractCommonComputerFormations(games));
+
+//        TODO
+//        To decide shooting
+//        player.setMostCommonShipPosition(new ArrayList<>());
+//        player.setMostUsedRegions(new ArrayList<>()); // extract from mostCommonShipPositions
+//
+
         // TODO VALIDATE DATA
         game.setWinner(victory);
+        this.playerRepository.save(player);
         this.gameRepository.save(game);
     }
 
@@ -97,6 +127,20 @@ public class GameServiceImpl implements GameService {
         return gameMyb.get();
     }
 
+    private Player getPlayerByIdFromRepo(String sid) throws NotFound, BadRequest {
+        UUID id = null;
+        try {
+            id = UUID.fromString(sid);
+        } catch ( IllegalArgumentException ex ) {
+            throw new BadRequest(ex);
+        }
+
+        Optional<Player> playerMyb = this.playerRepository.findById(id);
+        if(!playerMyb.isPresent())
+            throw new NotFound("Player with given id is not found!");
+        return playerMyb.get();
+    }
+
     private boolean isOnBoard(Tuple tuple, int x, int y ) throws BadRequest {
         if(tuple == null)
             throw new BadRequest("Tuple must be given");
@@ -119,6 +163,117 @@ public class GameServiceImpl implements GameService {
              }
         }
         return false;
+    }
+
+    private List<Formation> extractCommonComputerFormations(List<Game> games) {
+        Map<Formation, Integer> formations = new HashMap<>();
+
+        for(Game game : games) {
+            if(game.getWinner() != null) {
+                Formation computerFormation = game.getComputerShips().getFormation();
+                if(formations.containsKey(computerFormation)){
+                    formations.put(computerFormation, formations.get(computerFormation) + 1);
+                }
+                else {
+                    formations.put(computerFormation, 1);
+                }
+            }
+        }
+        List<Formation> top = new ArrayList<>();
+        formations = this.sortByValueFormations(formations);
+        Iterator<Map.Entry<Formation, Integer>> iterator = formations.entrySet().iterator();
+
+        if(formations.size() > 3 ) {
+            for(int i = 0; i < 3; i++) {
+                top.add(iterator.next().getKey());
+            }
+        }
+//        TODO: TEST
+//        for(Formation formation : formations.keySet()) {
+//            System.out.println(formation + " " + formations.get(formation));
+//        }
+
+        return top;
+    }
+
+    private List<Tuple> commonFirst5Strikes(List<Game> games) {
+        Map<Tuple, Integer> tuples = new HashMap<>();
+
+        for(Game game : games) {
+            if(game.getWinner() != null) {
+                List<Move> moves = game.getPlayerMoves();
+                int end = moves.size() < 5 ? moves.size() : 5;
+                for (int i = 0; i < end; i++) {
+                    Tuple tuple = moves.get(i).getPosition();
+                    Set<Tuple> keys = tuples.keySet();
+                    boolean tupleInKeys = false;
+                    for (Tuple key : keys) {
+                        if (key.equals(tuple)) {
+                            tuples.put(key, tuples.get(key) + 1);
+                            tupleInKeys = true;
+                        }
+                    }
+                    if (!tupleInKeys) {
+                        tuples.put(tuple, 1);
+                    }
+                }
+            }
+        }
+        List<Tuple> top5 = new ArrayList<>();
+        tuples = this.sortByValue(tuples);
+        Iterator<Map.Entry<Tuple, Integer>> iterator = tuples.entrySet().iterator();
+
+        int size = tuples.size() < 5 ? tuples.size() : 5;
+        for(int i = 0; i < size; i++) {
+            top5.add(iterator.next().getKey());
+        }
+        return top5;
+    }
+
+    public static HashMap<Tuple, Integer> sortByValue(Map<Tuple, Integer> hm)
+    {
+        // Create a list from elements of HashMap
+        List<Map.Entry<Tuple, Integer> > list =
+                new LinkedList<Map.Entry<Tuple, Integer> >(hm.entrySet());
+
+        // Sort the list
+        Collections.sort(list, new Comparator<Map.Entry<Tuple, Integer> >() {
+            public int compare(Map.Entry<Tuple, Integer> o1,
+                               Map.Entry<Tuple, Integer> o2)
+            {
+                return -(o1.getValue()).compareTo(o2.getValue());
+            }
+        });
+
+        // put data from sorted list to hashmap
+        HashMap<Tuple, Integer> temp = new LinkedHashMap<Tuple, Integer>();
+        for (Map.Entry<Tuple, Integer> aa : list) {
+            temp.put(aa.getKey(), aa.getValue());
+        }
+        return temp;
+    }
+
+    public static HashMap<Formation, Integer> sortByValueFormations(Map<Formation, Integer> hm)
+    {
+        // Create a list from elements of HashMap
+        List<Map.Entry<Formation, Integer> > list =
+                new LinkedList<Map.Entry<Formation, Integer> >(hm.entrySet());
+
+        // Sort the list
+        Collections.sort(list, new Comparator<Map.Entry<Formation, Integer> >() {
+            public int compare(Map.Entry<Formation, Integer> o1,
+                               Map.Entry<Formation, Integer> o2)
+            {
+                return -(o1.getValue()).compareTo(o2.getValue());
+            }
+        });
+
+        // put data from sorted list to hashmap
+        HashMap<Formation, Integer> temp = new LinkedHashMap<Formation, Integer>();
+        for (Map.Entry<Formation, Integer> aa : list) {
+            temp.put(aa.getKey(), aa.getValue());
+        }
+        return temp;
     }
 
 }

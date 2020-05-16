@@ -1,8 +1,5 @@
 package com.sbz.battleship.domain.model;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,5 +20,10 @@ public class Tuple {
         int y = tuple.getY();
 
         return this.x == x && this.y == y;
+    }
+
+    @Override
+    public String toString() {
+        return "(" + x + ", " + y + ")";
     }
 }
