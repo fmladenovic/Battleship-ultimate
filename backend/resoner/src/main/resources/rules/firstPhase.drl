@@ -1,0 +1,66 @@
+package firstPhase
+
+import com.sbz.battleship.domain.model.decisions.FormationDecision;
+import com.sbz.battleship.domain.model.enums.Formation;
+import com.sbz.battleship.domain.model.Tuple;
+
+import java.util.List;
+
+global List<Tuple> forRecheck;
+
+rule "Dont use formation from last game"
+    lock-on-active true
+    when
+        $d : FormationDecision( computerLastUsedFormation != null )
+    then
+        $d.getComputerFormations().remove($d.getComputerLastUsedFormation());
+        $d.setComputerLastUsedFormation(null); // lock-on-active is true but in any case
+        update( $d );
+end
+
+
+rule "Get random formation from rest"
+    no-loop true
+    when
+        $d : FormationDecision( decision == null)
+    then
+        $d.setDecision(Formation.generateShips($d.getRandomFromSet()));
+        $d.setReadyForDecision(true);
+
+        update( $d );
+end
+
+
+rule "Remove decison if in danger zone"
+    when
+        $d : FormationDecision( dangerPositions.size() > 0, decision.isTupleInAnyShip(dangerPositions.get(0)))
+    then
+        $d.getComputerFormations().remove($d.getDecision().getFormation());
+        $d.setDecision(null);
+        $d.getDangerPositions().addAll(forRecheck);
+        update( $d );
+end
+
+rule "Remove decison if in most used formations"
+    when
+        $d : FormationDecision( decision != null, computerMostUsedFormations.contains(decision.getFormation()))
+    then
+        $d.getComputerFormations().remove($d.getDecision().getFormation());
+        $d.setDecision(null);
+        update( $d );
+end
+
+
+
+rule "Remove tuple that is not in current formation"
+    when
+        $d : FormationDecision(decision != null, dangerPositions.size() > 0, !decision.isTupleInAnyShip(dangerPositions.get(0)))
+    then
+        forRecheck.add($d.getDangerPositions().get(0));
+        $d.getDangerPositions().remove(0);
+        update( $d );
+end
+
+
+
+

@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -37,7 +38,7 @@ public class Player {
 
     // For computer defence
     private Formation computerLastUsedFormation; // for ship positions
-    private List<Formation> computerMostUsedFormations;
+    private Set<Formation> computerMostUsedFormations;
     private List<Tuple> commonFirst5Strikes; //or maybe 10
     private List<Tuple> lastFirst5Strikes; // or maybe 10
 

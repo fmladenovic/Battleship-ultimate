@@ -3,35 +3,36 @@ package com.sbz.battleship.service;
 import com.sbz.battleship.domain.exception.BadRequest;
 import com.sbz.battleship.domain.exception.NotFound;
 import com.sbz.battleship.domain.model.*;
+import com.sbz.battleship.domain.model.decisions.FormationDecision;
 import com.sbz.battleship.domain.model.enums.Formation;
-import com.sbz.battleship.domain.model.enums.Region;
-import com.sbz.battleship.domain.model.enums.Strategy;
 import com.sbz.battleship.repository.GameRepository;
 import com.sbz.battleship.repository.PlayerRepository;
-import com.sbz.battleship.utility.Formations;
 import com.sbz.battleship.web.dto.GameDto;
 import com.sbz.battleship.web.dto.PlayerDto;
 import com.sbz.battleship.web.dto.SignInRequest;
 import com.sbz.battleship.web.dto.SignUpRequest;
+import org.kie.api.runtime.KieContainer;
+import org.kie.api.runtime.KieSession;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class PlayerServiceImpl implements PlayerService {
 
     private final PlayerRepository playerRepository;
     private final GameRepository gameRepository;
+    private final KieContainer kContainer;
 
 
     public PlayerServiceImpl(
             PlayerRepository playerRepository,
-            GameRepository gameRepository
+            GameRepository gameRepository,
+            KieContainer kieContainer
             ) {
         this.playerRepository = playerRepository;
         this.gameRepository = gameRepository;
+        this.kContainer = kieContainer;
     }
 
 
@@ -57,6 +58,12 @@ public class PlayerServiceImpl implements PlayerService {
         player.setPassword(password);
         player.setGames(new ArrayList<>());
 
+        player.setCommonFirst5Strikes(new ArrayList<>());
+        player.setLastFirst5Strikes(new ArrayList<>());
+        player.setComputerLastUsedFormation(null);
+        player.setLastGameVictory(null);
+        player.setComputerMostUsedFormations(new HashSet<>());
+
         return this.playerRepository.save(player);
     }
 
@@ -71,7 +78,30 @@ public class PlayerServiceImpl implements PlayerService {
         game.setPlayerMoves(new ArrayList<>());
         game.setComputerMoves(new ArrayList<>());
         game.setWinner(null); // not ended game
-        game.setComputerShips(Formations.initialFormation()); // TODO: FILL WITH REZONER
+
+        List<Tuple> danger = player.getCommonFirst5Strikes();
+        List<Tuple> danger1 = player.getLastFirst5Strikes();
+        danger.addAll(danger);
+
+        FormationDecision decision = new FormationDecision(
+                Formation.computerFormations(),
+                player.getComputerLastUsedFormation(),
+                player.getComputerMostUsedFormations(),
+                danger,
+                false,
+                null
+        );
+
+
+        KieSession kieSession = this.kContainer.newKieSession("session");
+        kieSession.setGlobal("forRecheck", new ArrayList<>());
+        kieSession.insert(decision);
+        kieSession.fireAllRules();
+
+        game.setComputerShips(decision.getDecision()); // TODO: FILL WITH REZONER
+
+        player.setComputerLastUsedFormation(decision.getDecision().getFormation());
+
 
         game.setPlayerId(player.getId());
         this.gameRepository.save(game);
@@ -95,7 +125,7 @@ public class PlayerServiceImpl implements PlayerService {
         game.setPlayerMoves(new ArrayList<>());
         game.setComputerMoves(new ArrayList<>());
         game.setWinner(null); // not ended game
-        game.setComputerShips(Formations.initialFormation()); // TODO: FILL WITH REZONER
+        game.setComputerShips(Formation.generateShips(Formation.INITIAL)); // TODO: FILL WITH REZONER
 
         game.setPlayerId(player.getId());
         this.gameRepository.save(game);

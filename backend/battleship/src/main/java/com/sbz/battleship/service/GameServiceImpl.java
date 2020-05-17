@@ -91,6 +91,7 @@ public class GameServiceImpl implements GameService {
         player.setCommonFirst5Strikes(this.commonFirst5Strikes(games));  //or maybe 10
         player.setComputerMostUsedFormations(this.extractCommonComputerFormations(games));
 
+
 //        TODO
 //        To decide shooting
 //        player.setMostCommonShipPosition(new ArrayList<>());
@@ -165,7 +166,7 @@ public class GameServiceImpl implements GameService {
         return false;
     }
 
-    private List<Formation> extractCommonComputerFormations(List<Game> games) {
+    private Set<Formation> extractCommonComputerFormations(List<Game> games) {
         Map<Formation, Integer> formations = new HashMap<>();
 
         for(Game game : games) {
@@ -179,7 +180,7 @@ public class GameServiceImpl implements GameService {
                 }
             }
         }
-        List<Formation> top = new ArrayList<>();
+        Set<Formation> top = new HashSet<>();
         formations = this.sortByValueFormations(formations);
         Iterator<Map.Entry<Formation, Integer>> iterator = formations.entrySet().iterator();
 

@@ -17,4 +17,15 @@ public class Ships {
     private Formation formation;
     private List<Ship> ships;
 
+
+    public boolean isTupleInAnyShip(Tuple tuple) {
+        for( Ship ship : ships ) {
+            for(Tuple t : ship.getPositions()) {
+                if(t.equals(tuple)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

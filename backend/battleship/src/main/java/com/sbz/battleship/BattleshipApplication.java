@@ -1,8 +1,10 @@
 package com.sbz.battleship;
 
+import com.sbz.battleship.domain.model.decisions.FormationDecision;
 import org.kie.api.KieServices;
 import org.kie.api.builder.KieScanner;
 import org.kie.api.runtime.KieContainer;
+import org.kie.api.runtime.KieSession;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -20,11 +22,8 @@ public class BattleshipApplication {
         KieContainer kContainer = ks
                 .newKieContainer(ks.newReleaseId("com.sbz", "resoner", "0.0.1-SNAPSHOT"));
         KieScanner kScanner = ks.newKieScanner(kContainer);
-        kScanner.start(1000);
+        kScanner.start(10_000);
 
-//        KieSession kieSession = kContainer.newKieSession("session");
-//        kieSession.addEventListener(new DebugAgendaEventListener());
-//        kieSession.setGlobal("triggeredAlarmService", triggeredAlarmService);
         return kContainer;
     }
 }

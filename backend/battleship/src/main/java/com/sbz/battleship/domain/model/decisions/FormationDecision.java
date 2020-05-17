@@ -1,5 +1,6 @@
 package com.sbz.battleship.domain.model.decisions;
 
+import com.sbz.battleship.domain.model.Ships;
 import com.sbz.battleship.domain.model.Tuple;
 import com.sbz.battleship.domain.model.enums.Formation;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,9 +18,28 @@ import java.util.List;
 @Setter
 public class FormationDecision {
 
+    private Set<Formation> computerFormations;
+
+
     private Formation computerLastUsedFormation; // for ship positions
-    private List<Formation> computerMostUsedFormations;
-    private List<Tuple> commonPlayerFirst5Strikes; //or maybe 10
-    private List<Tuple> lastPlayerFirst5Strikes; // or maybe 10
+    private Set<Formation> computerMostUsedFormations; //set
+
+    private List<Tuple> dangerPositions; //or maybe 10
+
+    private boolean readyForDecision = false;
+    private Ships decision;
+
+    public Formation getRandomFromSet() {
+        int size = computerFormations.size();
+        int item = new Random().nextInt(size); // In real life, the Random object should be rather more shared than this
+        int i = 0;
+        for(Formation obj : computerFormations)
+        {
+            if (i == item)
+                return obj;
+            i++;
+        }
+        return Formation.INITIAL;
+    }
 
 }
