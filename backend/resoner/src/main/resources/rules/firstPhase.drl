@@ -41,6 +41,7 @@ rule "Remove decison if in danger zone"
         System.out.println("Izbacena je formacija " + $d.getDecision().getFormation() + " zato sto je u opasnoj zoni");
         $d.setDecision(null);
         $d.getDangerPositions().addAll(forRecheck);
+        forRecheck.clear();
         update( $d );
 end
 

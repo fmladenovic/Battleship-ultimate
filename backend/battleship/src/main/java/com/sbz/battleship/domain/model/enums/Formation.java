@@ -25,8 +25,6 @@ public enum Formation {
 
 
     public static Ships generateShips(Formation formation) {
-        System.out.println(formation);
-
         switch(formation) {
             case FORMATION1:
                 return formation1();

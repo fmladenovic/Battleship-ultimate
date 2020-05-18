@@ -42,7 +42,7 @@ public class GameServiceImpl implements GameService {
     @Override
     public Move addComputerMove(String id) throws NotFound, BadRequest {
         Game game = this.getByIdFromRepo(id);
-        Move move = Strategy.generateMove(Strategy.EVERY_SECOND_HORIZONTAL, Region.LEFT_TOP_MIDDLE, game.getComputerMoves());
+        Move move = Strategy.generateMove(Strategy.RANDOM, Region.FREE, game.getComputerMoves()); //TODO RESONER
         game.getComputerMoves().add(move);
         move.setHit(this.isShipHit(move.getPosition(), game.getPlayerShips()));
         this.gameRepository.save(game);

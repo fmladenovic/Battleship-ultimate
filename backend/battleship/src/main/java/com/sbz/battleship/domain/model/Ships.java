@@ -19,7 +19,6 @@ public class Ships {
 
 
     public boolean isTupleInAnyShip(Tuple tuple) {
-        System.out.println(tuple);
         for( Ship ship : ships ) {
             for(Tuple t : ship.getPositions()) {
                 if(t.equals(tuple)) {
