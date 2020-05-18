@@ -14,6 +14,7 @@ rule "Dont use formation from last game"
         $d : FormationDecision( computerLastUsedFormation != null )
     then
         $d.getComputerFormations().remove($d.getComputerLastUsedFormation());
+        System.out.println("Izbacena je formacija " + $d.getComputerLastUsedFormation() + " zato sto je poslednja koriscena");
         $d.setComputerLastUsedFormation(null); // lock-on-active is true but in any case
         update( $d );
 end
@@ -25,6 +26,7 @@ rule "Get random formation from rest"
         $d : FormationDecision( decision == null)
     then
         $d.setDecision(Formation.generateShips($d.getRandomFromSet()));
+        System.out.println("Random je izabrana formacija " + $d.getDecision().getFormation());
         $d.setReadyForDecision(true);
 
         update( $d );
@@ -33,9 +35,10 @@ end
 
 rule "Remove decison if in danger zone"
     when
-        $d : FormationDecision( dangerPositions.size() > 0, decision.isTupleInAnyShip(dangerPositions.get(0)))
+        $d : FormationDecision( decision != null, dangerPositions.size() > 0, decision.isTupleInAnyShip( dangerPositions.get(0) ) )
     then
         $d.getComputerFormations().remove($d.getDecision().getFormation());
+        System.out.println("Izbacena je formacija " + $d.getDecision().getFormation() + " zato sto je u opasnoj zoni");
         $d.setDecision(null);
         $d.getDangerPositions().addAll(forRecheck);
         update( $d );
@@ -46,6 +49,7 @@ rule "Remove decison if in most used formations"
         $d : FormationDecision( decision != null, computerMostUsedFormations.contains(decision.getFormation()))
     then
         $d.getComputerFormations().remove($d.getDecision().getFormation());
+        System.out.println("Izbacena je formacija " + $d.getDecision().getFormation() + " zato sto je cesto koriscena");
         $d.setDecision(null);
         update( $d );
 end
@@ -57,6 +61,7 @@ rule "Remove tuple that is not in current formation"
         $d : FormationDecision(decision != null, dangerPositions.size() > 0, !decision.isTupleInAnyShip(dangerPositions.get(0)))
     then
         forRecheck.add($d.getDangerPositions().get(0));
+        System.out.println("Izbacen je par (" + $d.getDangerPositions().get(0).getX() + ", " + $d.getDangerPositions().get(0).getY() + ") jer ne ugrozava trenutno odabranu formaciju.");
         $d.getDangerPositions().remove(0);
         update( $d );
 end

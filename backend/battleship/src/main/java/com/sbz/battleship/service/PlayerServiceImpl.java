@@ -81,7 +81,7 @@ public class PlayerServiceImpl implements PlayerService {
 
         List<Tuple> danger = player.getCommonFirst5Strikes();
         List<Tuple> danger1 = player.getLastFirst5Strikes();
-        danger.addAll(danger);
+        danger.addAll(danger1);
 
         FormationDecision decision = new FormationDecision(
                 Formation.computerFormations(),
@@ -125,8 +125,29 @@ public class PlayerServiceImpl implements PlayerService {
         game.setPlayerMoves(new ArrayList<>());
         game.setComputerMoves(new ArrayList<>());
         game.setWinner(null); // not ended game
-        game.setComputerShips(Formation.generateShips(Formation.INITIAL)); // TODO: FILL WITH REZONER
 
+        List<Tuple> danger = player.getCommonFirst5Strikes();
+        List<Tuple> danger1 = player.getLastFirst5Strikes();
+        danger.addAll(danger1);
+
+        FormationDecision decision = new FormationDecision(
+                Formation.computerFormations(),
+                player.getComputerLastUsedFormation(),
+                player.getComputerMostUsedFormations(),
+                danger,
+                false,
+                null
+        );
+
+
+        KieSession kieSession = this.kContainer.newKieSession("session");
+        kieSession.setGlobal("forRecheck", new ArrayList<>());
+        kieSession.insert(decision);
+        kieSession.fireAllRules();
+
+        game.setComputerShips(decision.getDecision()); // TODO: FILL WITH REZONER
+
+        player.setComputerLastUsedFormation(decision.getDecision().getFormation());
         game.setPlayerId(player.getId());
         this.gameRepository.save(game);
 
