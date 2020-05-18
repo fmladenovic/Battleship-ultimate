@@ -21,7 +21,8 @@ import { GamePhaseEndComponent } from './game-phase-end/game-phase-end.component
     GamePhaseEndComponent
   ],
   exports: [
-    GameComponent
+    GameComponent,
+    GamePhaseOneComponent
   ],
   imports: [
     CommonModule,

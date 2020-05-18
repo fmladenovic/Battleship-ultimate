@@ -197,6 +197,16 @@ export class GameService {
   setShips() {
     const ships = [];
     this.gameHolder.playerShips.ships.forEach( ship => ships.push(ship));
+
+    //delete
+    ships.forEach( ship => {
+      let forPrint = "Ship ship = new Ship(Arrays.asList(";
+      ship.positions.forEach( tuple => forPrint = forPrint + " new Tuple(" + tuple.x +", " + tuple.y + "),"  );
+      forPrint = forPrint + "), " + ship.size + ");";
+      console.log(forPrint);
+    })
+    //
+
     this.http.put<Ships>(GAME + `/${this.gameHolder.id}/set_ships`, ships)
     .subscribe(
       success => {
