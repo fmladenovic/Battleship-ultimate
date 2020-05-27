@@ -1,0 +1,14 @@
+package secondPhase
+
+import com.sbz.battleship.domain.model.decisions.MoveDecision;
+
+
+
+// TODO
+
+// Kompletna strategy klasa moze u pravila...
+// accumulate
+
+// QUERY
+// DRL funkcije
+// kombinovanje pravila

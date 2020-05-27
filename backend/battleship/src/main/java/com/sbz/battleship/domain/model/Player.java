@@ -34,7 +34,6 @@ public class Player {
     // For computer attack
     private List<Ship> lastPlayShipsPositions;
     private List<Tuple> mostCommonShipPosition;
-    private List<Region> mostUsedRegions; // extract from mostCommonShipPositions
 
     // For computer defence
     private Formation computerLastUsedFormation; // for ship positions

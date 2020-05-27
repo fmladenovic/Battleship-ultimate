@@ -3,11 +3,15 @@ package com.sbz.battleship.service;
 import com.sbz.battleship.domain.exception.BadRequest;
 import com.sbz.battleship.domain.exception.NotFound;
 import com.sbz.battleship.domain.model.*;
+import com.sbz.battleship.domain.model.decisions.AgendaGroupDecision;
+import com.sbz.battleship.domain.model.decisions.MoveDecision;
 import com.sbz.battleship.domain.model.enums.Formation;
 import com.sbz.battleship.domain.model.enums.Region;
 import com.sbz.battleship.domain.model.enums.Strategy;
 import com.sbz.battleship.repository.GameRepository;
 import com.sbz.battleship.repository.PlayerRepository;
+import org.kie.api.runtime.KieContainer;
+import org.kie.api.runtime.KieSession;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -20,13 +24,18 @@ public class GameServiceImpl implements GameService {
 
     private final PlayerRepository playerRepository;
     private final GameRepository gameRepository;
+    private final KieContainer kContainer;
+
 
     public GameServiceImpl(
             PlayerRepository playerRepository,
-            GameRepository gameRepository
+            GameRepository gameRepository,
+            KieContainer kieContainer
+
     ) {
         this.playerRepository = playerRepository;
         this.gameRepository = gameRepository;
+        this.kContainer = kieContainer;
     }
 
     @Override
@@ -42,11 +51,72 @@ public class GameServiceImpl implements GameService {
     @Override
     public Move addComputerMove(String id) throws NotFound, BadRequest {
         Game game = this.getByIdFromRepo(id);
-        Move move = Strategy.generateMove(Strategy.RANDOM, Region.FREE, game.getComputerMoves()); //TODO RESONER
-        game.getComputerMoves().add(move);
+        Player player = this.getPlayerByIdFromRepo(game.getPlayerId().toString());
+
+        Move move = this.resoner(game, player);
+
+
         move.setHit(this.isShipHit(move.getPosition(), game.getPlayerShips()));
+        game.getComputerMoves().add(move);
         this.gameRepository.save(game);
         return move;
+    }
+
+    private Move resoner(Game game, Player player) {
+
+        MoveDecision moveDecision = new MoveDecision();
+        moveDecision.setMostCommonShipPosition(player.getMostCommonShipPosition());
+        moveDecision.setLastPlayShipsPositions(player.getLastPlayShipsPositions());
+        moveDecision.setMoves(game.getComputerMoves()); // played moves in this game
+        moveDecision.setRegions(null); // use rules to decide which region you should use
+        moveDecision.setStrategies(null); // use rules to decide which strategies you should use
+        moveDecision.setReadyForDecision(false);
+        moveDecision.setDecision(null);
+
+        AgendaGroupDecision agendaGroupDecision = new AgendaGroupDecision(
+                player.getLastPlayShipsPositions(),
+                player.getMostCommonShipPosition(),
+                game.getComputerMoves(),
+                null,
+                false
+        );
+        KieSession kieSession = this.kContainer.newKieSession("session");
+        kieSession.setGlobal("forRecheckMoves", new ArrayList<Move>());
+        kieSession.setGlobal("availableShips",  new ArrayList<Ship>());
+
+
+        kieSession.insert(agendaGroupDecision);
+        kieSession.fireAllRules();
+
+
+        System.out.println(agendaGroupDecision.getDecision());
+
+        kieSession.insert(moveDecision);
+        switch(agendaGroupDecision.getDecision()) {
+            case AFTER_HIT:
+                // kieSession.getAgenda().getAgendaGroup("after_hit").setFocus();
+                moveDecision.setDecision( Strategy.generateMove(Strategy.AFTER_HIT, Region.FREE, game.getComputerMoves()) ); //DELETE
+                System.out.println("Random generated - todo");
+                break;
+            case LAST_POSITIONS:
+                kieSession.getAgenda().getAgendaGroup("last_positions").setFocus();
+                break;
+            case COMMON_POSITIONS:
+                // kieSession.getAgenda().getAgendaGroup("common_positions").setFocus();
+                moveDecision.setDecision( Strategy.generateMove(Strategy.RANDOM, Region.FREE, game.getComputerMoves()) ); //DELETE
+                System.out.println("Random generated - todo");
+                break;
+            default: // FINDING_ENEMY
+                // kieSession.getAgenda().getAgendaGroup("finding_enemy").setFocus();
+                moveDecision.setDecision( Strategy.generateMove(Strategy.RANDOM, Region.FREE, game.getComputerMoves()) ); //DELETE
+                System.out.println("Random generated - todo");
+                break;
+        }
+        kieSession.fireAllRules();
+
+
+
+        return moveDecision.getDecision();
     }
 
     @Override
@@ -55,8 +125,6 @@ public class GameServiceImpl implements GameService {
         // game.setComputerShips(ships);
         this.gameRepository.save(game);
     }
-
-
 
 
     @Override
@@ -92,11 +160,8 @@ public class GameServiceImpl implements GameService {
         player.setComputerMostUsedFormations(this.extractCommonComputerFormations(games));
 
 
-//        TODO
-//        To decide shooting
-//        player.setMostCommonShipPosition(new ArrayList<>());
-//        player.setMostUsedRegions(new ArrayList<>()); // extract from mostCommonShipPositions
-//
+
+        player.setMostCommonShipPosition(this.extractMostCommonShipsPositions(games));
 
         // TODO VALIDATE DATA
         game.setWinner(victory);
@@ -231,6 +296,40 @@ public class GameServiceImpl implements GameService {
         return top5;
     }
 
+    public List<Tuple> extractMostCommonShipsPositions(List<Game> games) {
+        Map<Tuple, Integer> tuples = new HashMap<>();
+        for(Game game : games) {
+            if(game.getWinner() != null) {
+                List<Ship> ships = game.getPlayerShips().getShips();
+
+                for (Ship s : ships) {
+                    for (Tuple t : s.getPositions()) {
+                        Set<Tuple> keys = tuples.keySet();
+                        boolean tupleInKeys = false;
+                        for (Tuple key : keys) {
+                            if (key.equals(t)) {
+                                tuples.put(key, tuples.get(key) + 1);
+                                tupleInKeys = true;
+                            }
+                        }
+                        if (!tupleInKeys) {
+                            tuples.put(t, 1);
+                        }
+                    }
+                }
+            }
+        }
+        List<Tuple> top5 = new ArrayList<>();
+        tuples = this.sortByValue(tuples);
+        Iterator<Map.Entry<Tuple, Integer>> iterator = tuples.entrySet().iterator();
+
+        int size = tuples.size() < 5 ? tuples.size() : 5;
+        for(int i = 0; i < size; i++) {
+            top5.add(iterator.next().getKey());
+        }
+        return top5;
+    }
+
     public static HashMap<Tuple, Integer> sortByValue(Map<Tuple, Integer> hm)
     {
         // Create a list from elements of HashMap
@@ -276,5 +375,9 @@ public class GameServiceImpl implements GameService {
         }
         return temp;
     }
+
+
+
+
 
 }

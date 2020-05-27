@@ -14,7 +14,8 @@ public enum Strategy {
     EVERY_SECOND_HORIZONTAL,
     AFTER_HIT,
     AROUND_SHIP,
-    AROUND_LAST_MOVE;
+    AROUND_LAST_MOVE,
+    CHECK_LAST_GAME_POSITIONS;
 
     public static Move generateMove(Strategy strategy, Region region, List<Move> executedMoves) {
         switch(strategy) {
@@ -29,7 +30,7 @@ public enum Strategy {
                 return everySecondVertical(region, executedMoves);
 
             case AFTER_HIT:
-                return afterHit(region, executedMoves);
+                return random(region, executedMoves);
 
             case AROUND_LAST_MOVE:
                 return aroundLastMove(region, executedMoves);

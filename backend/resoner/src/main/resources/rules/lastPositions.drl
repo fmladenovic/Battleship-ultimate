@@ -1,0 +1,85 @@
+package secondPhase
+
+import java.util.Random;
+import java.util.List;
+
+import com.sbz.battleship.domain.model.decisions.MoveDecision;
+import com.sbz.battleship.domain.model.Ship;
+import com.sbz.battleship.domain.model.Tuple;
+import com.sbz.battleship.domain.model.Move;
+import com.sbz.battleship.domain.model.enums.Strategy;
+import com.sbz.battleship.domain.model.enums.Region;
+
+
+global List<Move> forRecheckMoves;
+global List<Ship> availableShips;
+
+
+rule "Remove checked ship"
+    agenda-group "last_positions"
+    when
+        $moveDecision: MoveDecision( decision == null, lastPlayShipsPositions.size() > 0, moves.size() > 0, lastPlayShipsPositions.get(0).isTupleInShip(moves.get(0).getPosition() ))
+    then
+        System.out.println("Brod velicine " + $moveDecision.getLastPlayShipsPositions().get(0).getSize() + " je vec proveren!");
+
+        $moveDecision.getMoves().addAll(forRecheckMoves);
+        forRecheckMoves.clear();
+
+        $moveDecision.getLastPlayShipsPositions().remove(0);
+        update( $moveDecision );
+end
+
+rule "Remove checked move"
+    agenda-group "last_positions"
+    when
+        $moveDecision: MoveDecision( decision == null, lastPlayShipsPositions.size() > 0, moves.size() > 0, !lastPlayShipsPositions.get(0).isTupleInShip( moves.get(0).getPosition() ))
+    then
+        forRecheckMoves.add($moveDecision.getMoves().get(0));
+        System.out.println("Par " + $moveDecision.getMoves().get(0).getPosition() + " nije u brodu duzine " + $moveDecision.getLastPlayShipsPositions().get(0).getSize() + "!");
+        $moveDecision.getMoves().remove(0);
+        update( $moveDecision );
+end
+
+rule "Unchecked ship"
+    agenda-group "last_positions"
+    when
+        $moveDecision: MoveDecision(lastPlayShipsPositions.size() > 0, moves.size() == 0, decision == null )
+    then
+
+        $moveDecision.getMoves().addAll(forRecheckMoves);
+        forRecheckMoves.clear();
+
+        availableShips.add($moveDecision.getLastPlayShipsPositions().get(0));
+        System.out.println("Brod velicine " + $moveDecision.getLastPlayShipsPositions().get(0).getSize() + " moze biti biran!");
+
+        $moveDecision.getLastPlayShipsPositions().remove(0);
+        update( $moveDecision );
+
+end
+
+
+
+rule "Generate move"
+    agenda-group "last_positions"
+    when
+        $moveDecision: MoveDecision(lastPlayShipsPositions.size() == 0, decision == null)
+    then
+        Random rand = new Random();
+        int randInt = rand.nextInt(availableShips.size());
+        Ship ship = (Ship)availableShips.get(randInt);
+        randInt = rand.nextInt(ship.getSize());
+
+        Move move = new Move(
+                ship.getPositions().get(randInt),
+                false,
+                Strategy.CHECK_LAST_GAME_POSITIONS,
+                Region.FREE
+        );
+        System.out.println("Uzet je par " + ship.getPositions().get(randInt) + " iz broda duzine " + ship.getSize());
+
+
+        $moveDecision.setReadyForDecision(true);
+        $moveDecision.setDecision( move );
+        update( $moveDecision );
+end
+

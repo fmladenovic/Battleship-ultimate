@@ -64,6 +64,9 @@ public class PlayerServiceImpl implements PlayerService {
         player.setLastGameVictory(null);
         player.setComputerMostUsedFormations(new HashSet<>());
 
+        player.setLastPlayShipsPositions(new ArrayList<>());
+        player.setMostCommonShipPosition(new ArrayList<>());
+
         return this.playerRepository.save(player);
     }
 
@@ -98,7 +101,7 @@ public class PlayerServiceImpl implements PlayerService {
         kieSession.insert(decision);
         kieSession.fireAllRules();
 
-        game.setComputerShips(decision.getDecision()); // TODO: FILL WITH REZONER
+        game.setComputerShips(decision.getDecision());
 
         player.setComputerLastUsedFormation(decision.getDecision().getFormation());
 
@@ -145,7 +148,7 @@ public class PlayerServiceImpl implements PlayerService {
         kieSession.insert(decision);
         kieSession.fireAllRules();
 
-        game.setComputerShips(decision.getDecision()); // TODO: FILL WITH REZONER
+        game.setComputerShips(decision.getDecision());
 
         player.setComputerLastUsedFormation(decision.getDecision().getFormation());
         game.setPlayerId(player.getId());

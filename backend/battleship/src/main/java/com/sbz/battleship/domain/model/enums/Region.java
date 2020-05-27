@@ -3,7 +3,9 @@ package com.sbz.battleship.domain.model.enums;
 import com.sbz.battleship.domain.model.Tuple;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public enum Region {
     PLAYER, // Player moves
@@ -88,6 +90,8 @@ public enum Region {
         }
     }
 
+
+
     static List<Tuple> generateCubePositions(int x, int y) {
         List<Tuple> tuples = new ArrayList<>();
         for(int i = x; i < x + 3; i++) {
@@ -131,5 +135,40 @@ public enum Region {
         }
         return tuples;
     }
+
+
+    static Set<Region> getAllRegions() {
+
+        Set<Region> regions = new HashSet<>();
+
+        regions.add( LEFT_TOP_LEFT_TOP );
+        regions.add( LEFT_TOP_RIGHT_TOP );
+        regions.add( LEFT_TOP_LEFT_BOTTOM );
+        regions.add( LEFT_TOP_RIGHT_BOTTOM );
+        regions.add( LEFT_TOP_MIDDLE );
+
+        regions.add( RIGHT_TOP_LEFT_TOP );
+        regions.add( RIGHT_TOP_RIGHT_TOP );
+        regions.add( RIGHT_TOP_LEFT_BOTTOM );
+        regions.add( RIGHT_TOP_RIGHT_BOTTOM );
+        regions.add( RIGHT_TOP_MIDDLE );
+
+        regions.add( LEFT_BOTTOM_LEFT_TOP );
+        regions.add( LEFT_BOTTOM_RIGHT_TOP );
+        regions.add( LEFT_BOTTOM_LEFT_BOTTOM );
+        regions.add( LEFT_BOTTOM_RIGHT_BOTTOM );
+        regions.add( LEFT_BOTTOM_MIDDLE );
+
+        regions.add( RIGHT_BOTTOM_LEFT_TOP );
+        regions.add( RIGHT_BOTTOM_RIGHT_TOP );
+        regions.add( RIGHT_BOTTOM_LEFT_BOTTOM );
+        regions.add( RIGHT_BOTTOM_RIGHT_BOTTOM );
+        regions.add( RIGHT_BOTTOM_MIDDLE );
+
+        regions.add( FREE );
+
+        return regions;
+    }
+
 
 }

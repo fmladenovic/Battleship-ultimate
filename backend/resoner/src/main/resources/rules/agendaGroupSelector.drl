@@ -1,0 +1,99 @@
+package secondPhase
+
+import com.sbz.battleship.domain.model.decisions.AgendaGroupDecision;
+import com.sbz.battleship.domain.model.enums.AgendaGroup
+import com.sbz.battleship.domain.model.Tuple
+import com.sbz.battleship.domain.model.Ship
+import com.sbz.battleship.domain.model.Move
+import com.sbz.battleship.domain.model.enums.Strategy;
+
+
+
+rule "Check if checked Last Positions"
+    when
+        $d : AgendaGroupDecision(decision == null, !checkLastPositions, $moves: moves)
+        Number(intValue > 3) from accumulate(
+            $move: Move(strategy == Strategy.CHECK_LAST_GAME_POSITIONS)
+            from $moves,
+            init( int count = 0; ),
+            action( count += 1; ),
+            result( count )
+        )
+    then
+        $d.setCheckLastPositions(true);
+        System.out.println("Provereni su random brodovi iz prosle partije!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        System.out.println("----------------------------------------------------------------------------------------------------------------");
+        update( $d );
+end
+
+
+//rule "Count moves from common positions"
+//    when
+//        $ship: Ship()
+//        $move: Move()
+//        isMoveFromLastPositions($move, $ship)
+//    then
+//        countLastPositionCheck++;
+//        System.out.println("Potez " + $move.getPosition() + " je bio u cestih formacija! " + "counter = " + countLastPositionCheck);
+//end
+
+
+
+
+
+rule "Last move was hit"
+    lock-on-active true
+    when
+        $d : AgendaGroupDecision(decision == null, moves.size() > 0, moves.get(moves.size() - 1).isHit() )
+    then
+        $d.setDecision(AgendaGroup.AFTER_HIT);
+        System.out.println("U poslednjem potezu se desio pogodak!");
+        System.out.println("----------------------------------------------------------------------------------------------------------------");
+        update( $d );
+end
+
+//rule "Checking field after hit"
+//    lock-on-active true
+//    when
+//        $d : AgendaGroupDecision(decision == null, moves.size() > 0)
+//        // query
+//    then
+//        $d.setDecision(AgendaGroup.AFTER_HIT);
+//        System.out.println("Posle pogotka smo promasili, pa pokusavamo da ispravimo!");
+//        update( $d );
+//end
+
+rule "Check last positions"
+    when
+        $d : AgendaGroupDecision( decision == null,  lastPlayShipsPositions.size() > 0, !checkLastPositions)
+    then
+        $d.setDecision(AgendaGroup.LAST_POSITIONS);
+        System.out.println("Nisu proverene pozicije slucajno odabranih brodova iz poslednje partije!");
+        System.out.println("----------------------------------------------------------------------------------------------------------------");
+        update( $d );
+end
+
+
+rule "Check common positions"
+    when
+        $d : AgendaGroupDecision(decision == null, mostCommonShipPosition.size() > 0 )
+        // neki query
+    then
+        $d.setDecision(AgendaGroup.COMMON_POSITIONS);
+        System.out.println("Nisu proverene cesto koriscene pozicije brodova!");
+        System.out.println("----------------------------------------------------------------------------------------------------------------");
+        update( $d );
+end
+
+rule "Finding enemy"
+    when
+        $d : AgendaGroupDecision(decision == null )
+    then
+        $d.setDecision(AgendaGroup.FINDING_ENEMY);
+        System.out.println("Potrebno je traziti neprijatelja!");
+        System.out.println("----------------------------------------------------------------------------------------------------------------");
+        update( $d );
+end
+
+
+

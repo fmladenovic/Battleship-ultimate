@@ -20,10 +20,8 @@ public class Ships {
 
     public boolean isTupleInAnyShip(Tuple tuple) {
         for( Ship ship : ships ) {
-            for(Tuple t : ship.getPositions()) {
-                if(t.equals(tuple)) {
-                    return true;
-                }
+            if(ship.isTupleInShip(tuple)) {
+                return true;
             }
         }
         return false;
