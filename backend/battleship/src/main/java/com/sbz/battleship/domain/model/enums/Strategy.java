@@ -15,7 +15,8 @@ public enum Strategy {
     AFTER_HIT,
     AROUND_SHIP,
     AROUND_LAST_MOVE,
-    CHECK_LAST_GAME_POSITIONS;
+    CHECK_LAST_GAME_POSITIONS,
+    CHECK_COMMON_POSITIONS;
 
     public static Move generateMove(Strategy strategy, Region region, List<Move> executedMoves) {
         switch(strategy) {

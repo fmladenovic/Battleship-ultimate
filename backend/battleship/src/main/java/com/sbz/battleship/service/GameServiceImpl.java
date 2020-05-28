@@ -63,7 +63,7 @@ public class GameServiceImpl implements GameService {
     }
 
     private Move resoner(Game game, Player player) {
-
+        System.out.println("GAME MOVE SIZE CHECK: " + game.getComputerMoves().size());
         MoveDecision moveDecision = new MoveDecision();
         moveDecision.setMostCommonShipPosition(player.getMostCommonShipPosition());
         moveDecision.setLastPlayShipsPositions(player.getLastPlayShipsPositions());
@@ -78,6 +78,7 @@ public class GameServiceImpl implements GameService {
                 player.getMostCommonShipPosition(),
                 game.getComputerMoves(),
                 null,
+                false,
                 false
         );
         KieSession kieSession = this.kContainer.newKieSession("session");
@@ -88,6 +89,8 @@ public class GameServiceImpl implements GameService {
         kieSession.insert(agendaGroupDecision);
         kieSession.fireAllRules();
 
+        kieSession.setGlobal("forRecheckMovesInCommon", new ArrayList<Move>());
+        kieSession.setGlobal("availableCommonPositions",  new ArrayList<Tuple>());
 
         System.out.println(agendaGroupDecision.getDecision());
 
@@ -102,9 +105,7 @@ public class GameServiceImpl implements GameService {
                 kieSession.getAgenda().getAgendaGroup("last_positions").setFocus();
                 break;
             case COMMON_POSITIONS:
-                // kieSession.getAgenda().getAgendaGroup("common_positions").setFocus();
-                moveDecision.setDecision( Strategy.generateMove(Strategy.RANDOM, Region.FREE, game.getComputerMoves()) ); //DELETE
-                System.out.println("Random generated - todo");
+                kieSession.getAgenda().getAgendaGroup("common_positions").setFocus();
                 break;
             default: // FINDING_ENEMY
                 // kieSession.getAgenda().getAgendaGroup("finding_enemy").setFocus();
@@ -114,8 +115,7 @@ public class GameServiceImpl implements GameService {
         }
         kieSession.fireAllRules();
 
-
-
+        kieSession.dispose();
         return moveDecision.getDecision();
     }
 

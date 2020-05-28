@@ -1,1 +1,131 @@
 package secondPhase
+
+import java.util.Random;
+import java.util.List;
+
+import com.sbz.battleship.domain.model.Move;
+import com.sbz.battleship.domain.model.Tuple;
+import com.sbz.battleship.domain.model.enums.Strategy;
+import com.sbz.battleship.domain.model.enums.Region;
+
+import com.sbz.battleship.domain.model.decisions.MoveDecision;
+
+global List<Move> forRecheckMovesInCommon;
+global List<Tuple> availableCommonPositions;
+
+
+rule "Remove checkend position from common positions"
+    agenda-group "common_positions"
+    when
+        $moveDecision : MoveDecision(
+            decision == null,
+            moves.size() > 0,
+            mostCommonShipPosition.size() > 0,
+            moves.get(0).getPosition().equals(mostCommonShipPosition.get(0)),
+            !readyForDecision
+        )
+    then
+        $moveDecision.getMoves().addAll(forRecheckMovesInCommon);
+        forRecheckMovesInCommon.clear();
+        System.out.println("Pozicija je vec proverena " + $moveDecision.getMostCommonShipPosition().get(0) + " velicina moves " + $moveDecision.getMoves().size() );
+        $moveDecision.getMostCommonShipPosition().remove(0);
+        update( $moveDecision );
+end
+
+rule "Remove if move not equals with current position"
+    agenda-group "common_positions"
+    when
+        $moveDecision : MoveDecision(
+            decision == null,
+            moves.size() > 0,
+            mostCommonShipPosition.size() > 0,
+            !moves.get(0).getPosition().equals(mostCommonShipPosition.get(0)),
+            !readyForDecision
+        )
+    then
+        forRecheckMovesInCommon.add( $moveDecision.getMoves().get(0) );
+        System.out.println("Potez na polju " + $moveDecision.getMoves().get(0).getPosition() + " je prebacen u recheck!");
+        $moveDecision.getMoves().remove(0);
+        update( $moveDecision );
+end
+
+rule "Recheck for next position from common ship positions"
+    agenda-group "common_positions"
+    when
+        $moveDecision : MoveDecision(
+            decision == null,
+            moves.size() == 0,
+            mostCommonShipPosition.size() > 0,
+            !readyForDecision
+        )
+    then
+        $moveDecision.getMoves().addAll(forRecheckMovesInCommon);
+        forRecheckMovesInCommon.clear();
+        availableCommonPositions.add($moveDecision.getMostCommonShipPosition().get(0));
+        System.out.println("Pozicija je u mogucem izboru " + $moveDecision.getMostCommonShipPosition().get(0)  + " velicina moves " + $moveDecision.getMoves().size());
+        $moveDecision.getMostCommonShipPosition().remove(0);
+        update( $moveDecision );
+end
+
+
+rule "Set up for decision"
+    agenda-group "common_positions"
+    when
+        $moveDecision : MoveDecision(
+            decision == null,
+            mostCommonShipPosition.size() == 0,
+            !readyForDecision
+        )
+    then
+        $moveDecision.getMostCommonShipPosition().addAll(availableCommonPositions);
+        $moveDecision.getMoves().addAll(forRecheckMovesInCommon);
+        availableCommonPositions.clear();
+        forRecheckMovesInCommon.clear();
+        $moveDecision.setReadyForDecision(true);
+        System.out.println("Postavljeni su slobodni brodovi");
+        update( $moveDecision );
+end
+
+
+
+rule "Generate move if doesn't exist common ship position!"
+    agenda-group "common_positions"
+    when
+        $moveDecision : MoveDecision(
+            decision == null,
+            mostCommonShipPosition.size() == 0,
+            readyForDecision
+        )
+    then
+        System.out.println("Zasto je ovde usao?");
+
+        Move move = Strategy.generateMove(Strategy.RANDOM, Region.FREE, $moveDecision.getMoves());
+        move.setStrategy(Strategy.CHECK_COMMON_POSITIONS);
+        $moveDecision.setDecision(move);
+        System.out.println("Random generisan par je " + move.getPosition());
+        update( $moveDecision );
+end
+
+rule "Generate move if exists common ship position"
+    agenda-group "common_positions"
+    when
+        $moveDecision : MoveDecision(
+            decision == null,
+            mostCommonShipPosition.size() > 0,
+            readyForDecision
+        )
+    then
+        Random rand = new Random();
+        int randInt = rand.nextInt($moveDecision.getMostCommonShipPosition().size());
+        System.out.println("Rand int -> " + randInt + " "+ $moveDecision.getMostCommonShipPosition().size());
+        Move move = new Move(
+                $moveDecision.getMostCommonShipPosition().get(randInt),
+                false,
+                Strategy.CHECK_COMMON_POSITIONS,
+                Region.FREE
+        );
+        System.out.println("Uzet je par " + move.getPosition());
+
+        $moveDecision.setDecision( move );
+        update( $moveDecision );
+end

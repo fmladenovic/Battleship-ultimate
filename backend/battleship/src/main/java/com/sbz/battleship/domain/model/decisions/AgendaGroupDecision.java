@@ -27,4 +27,5 @@ public class AgendaGroupDecision {
     private AgendaGroup decision;
 
     Boolean checkLastPositions;
+    Boolean checkCommonPositions;
 }

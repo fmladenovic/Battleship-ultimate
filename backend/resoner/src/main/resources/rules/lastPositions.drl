@@ -18,7 +18,12 @@ global List<Ship> availableShips;
 rule "Remove checked ship"
     agenda-group "last_positions"
     when
-        $moveDecision: MoveDecision( decision == null, lastPlayShipsPositions.size() > 0, moves.size() > 0, lastPlayShipsPositions.get(0).isTupleInShip(moves.get(0).getPosition() ))
+        $moveDecision: MoveDecision(
+            decision == null,
+            lastPlayShipsPositions.size() > 0,
+            moves.size() > 0,
+            lastPlayShipsPositions.get(0).isTupleInShip( moves.get(0).getPosition() )
+        )
     then
         System.out.println("Brod velicine " + $moveDecision.getLastPlayShipsPositions().get(0).getSize() + " je vec proveren!");
 
@@ -32,7 +37,12 @@ end
 rule "Remove checked move"
     agenda-group "last_positions"
     when
-        $moveDecision: MoveDecision( decision == null, lastPlayShipsPositions.size() > 0, moves.size() > 0, !lastPlayShipsPositions.get(0).isTupleInShip( moves.get(0).getPosition() ))
+        $moveDecision: MoveDecision(
+            decision == null,
+            lastPlayShipsPositions.size() > 0,
+            moves.size() > 0,
+            !lastPlayShipsPositions.get(0).isTupleInShip( moves.get(0).getPosition() )
+        )
     then
         forRecheckMoves.add($moveDecision.getMoves().get(0));
         System.out.println("Par " + $moveDecision.getMoves().get(0).getPosition() + " nije u brodu duzine " + $moveDecision.getLastPlayShipsPositions().get(0).getSize() + "!");
@@ -43,7 +53,11 @@ end
 rule "Unchecked ship"
     agenda-group "last_positions"
     when
-        $moveDecision: MoveDecision(lastPlayShipsPositions.size() > 0, moves.size() == 0, decision == null )
+        $moveDecision: MoveDecision(
+            lastPlayShipsPositions.size() > 0,
+            moves.size() == 0,
+            decision == null
+        )
     then
 
         $moveDecision.getMoves().addAll(forRecheckMoves);
@@ -62,11 +76,14 @@ end
 rule "Generate move"
     agenda-group "last_positions"
     when
-        $moveDecision: MoveDecision(lastPlayShipsPositions.size() == 0, decision == null)
+        $moveDecision: MoveDecision(
+            lastPlayShipsPositions.size() == 0,
+            decision == null
+        )
     then
         Random rand = new Random();
         int randInt = rand.nextInt(availableShips.size());
-        Ship ship = (Ship)availableShips.get(randInt);
+        Ship ship = (Ship)availableShips.get(randInt); // Moze da se desi da smo nekim drugim nacinom isprobali 3/5 brodova i onda ovde moze da pukne ?
         randInt = rand.nextInt(ship.getSize());
 
         Move move = new Move(
