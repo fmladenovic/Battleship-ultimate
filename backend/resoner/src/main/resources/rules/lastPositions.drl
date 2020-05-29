@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.sbz.battleship.domain.model.decisions.MoveDecision;
 import com.sbz.battleship.domain.model.Ship;
-import com.sbz.battleship.domain.model.Tuple;
 import com.sbz.battleship.domain.model.Move;
 import com.sbz.battleship.domain.model.enums.Strategy;
 import com.sbz.battleship.domain.model.enums.Region;

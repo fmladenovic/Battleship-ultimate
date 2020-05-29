@@ -97,8 +97,6 @@ rule "Generate move if doesn't exist common ship position!"
             readyForDecision
         )
     then
-        System.out.println("Zasto je ovde usao?");
-
         Move move = Strategy.generateMove(Strategy.RANDOM, Region.FREE, $moveDecision.getMoves());
         move.setStrategy(Strategy.CHECK_COMMON_POSITIONS);
         $moveDecision.setDecision(move);
