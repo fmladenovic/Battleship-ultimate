@@ -63,6 +63,15 @@ public class GameServiceImpl implements GameService {
     }
 
     private Move resoner(Game game, Player player) {
+        System.out.println("GAME MOVE SIZE CHECK: " + game.getComputerMoves().size());
+        MoveDecision moveDecision = new MoveDecision();
+        moveDecision.setMostCommonShipPosition(player.getMostCommonShipPosition());
+        moveDecision.setLastPlayShipsPositions(player.getLastPlayShipsPositions());
+        moveDecision.setMoves(game.getComputerMoves()); // played moves in this game
+        moveDecision.setRegions(null); // use rules to decide which region you should use
+        moveDecision.setStrategies(null); // use rules to decide which strategies you should use
+        moveDecision.setReadyForDecision(false);
+        moveDecision.setDecision(null);
 
         AgendaGroupDecision agendaGroupDecision = new AgendaGroupDecision(
                 player.getLastPlayShipsPositions(),
@@ -79,16 +88,6 @@ public class GameServiceImpl implements GameService {
 
         kieSession.insert(agendaGroupDecision);
         kieSession.fireAllRules();
-//        moveDecision.setRegions(null); // use rules to decide which region you should use
-//        moveDecision.setStrategies(null); // use rules to decide which strategies you should use
-        System.out.println("GAME MOVE SIZE CHECK: " + game.getComputerMoves().size());
-        MoveDecision moveDecision = new MoveDecision();
-        moveDecision.setMostCommonShipPosition(agendaGroupDecision.getMostCommonShipPosition());
-        moveDecision.setLastPlayShipsPositions(agendaGroupDecision.getLastPlayShipsPositions());
-        moveDecision.setMoves(agendaGroupDecision.getMoves()); // played moves in this game
-        moveDecision.setReadyForDecision(false);
-        moveDecision.setDecision(null);
-
 
         kieSession.setGlobal("forRecheckMovesInCommon", new ArrayList<Move>());
         kieSession.setGlobal("availableCommonPositions",  new ArrayList<Tuple>());

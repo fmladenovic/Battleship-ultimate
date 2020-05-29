@@ -9,7 +9,12 @@ import com.sbz.battleship.domain.model.enums.Strategy;
 rule "First play"
     lock-on-active true
     when
-        $d : AgendaGroupDecision(decision == null, moves.size() == 0, mostCommonShipPosition.size() == 0, lastPlayShipsPositions.size() == 0)
+        $d : AgendaGroupDecision(
+            decision == null, // Nije odredjena agenda grupe
+            moves.size() == 0, // Prvi potez
+            mostCommonShipPosition.size() == 0, // Ne postoje podaci o igracu
+            lastPlayShipsPositions.size() == 0  // Ne postoje podaci o igracu
+        )
     then
         $d.setDecision(AgendaGroup.FINDING_ENEMY);
         System.out.println("Protivnikova prva partija, prvi putez!");
@@ -17,63 +22,16 @@ rule "First play"
         update( $d );
 end
 
-rule "Check if checked Last Positions"
-    no-loop true
-    when
-        $d : AgendaGroupDecision(decision == null, !checkLastPositions, $moves: moves, lastPlayShipsPositions.size() != 0)
-        Number(intValue == 3) from accumulate(
-            $move: Move(strategy == Strategy.CHECK_LAST_GAME_POSITIONS)
-            from $moves,
-            init( int count = 0; ),
-            action( count += 1; ),
-            result( count )
-        )
-    then
-        $d.setCheckLastPositions(true);
-        System.out.println("Provereni su random brodovi iz prosle partije!");
-        System.out.println("----------------------------------------------------------------------------------------------------------------");
-        update( $d );
-end
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-rule "Check if checked common positions"
-    no-loop true
-    when
-        $d : AgendaGroupDecision(decision == null, checkLastPositions, !checkCommonPositions, $moves: moves, mostCommonShipPosition.size() != 0)
-        Number(intValue == 5) from accumulate(
-            $move: Move(strategy == Strategy.CHECK_COMMON_POSITIONS)
-            from $moves,
-            init( int count = 0; ),
-            action( count += 1; ),
-            result( count )
-        )
-    then
-        $d.setCheckCommonPositions(true);
-        System.out.println("Proverene su ceste pozicije!");
-        System.out.println("----------------------------------------------------------------------------------------------------------------");
-        update( $d );
-end
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//rule "Count moves from common positions"
-//    when
-//        $ship: Ship()
-//        $move: Move()
-//        isMoveFromLastPositions($move, $ship)
-//    then
-//        countLastPositionCheck++;
-//        System.out.println("Potez " + $move.getPosition() + " je bio u cestih formacija! " + "counter = " + countLastPositionCheck);
-//end
-
-
-
 
 
 rule "Last move was hit"
     lock-on-active true
     when
-        $d : AgendaGroupDecision(decision == null, moves.size() > 0, moves.get(moves.size() - 1).isHit() )
+        $d : AgendaGroupDecision(
+            decision == null, // Nije odredjena agenda grupe
+            moves.size() > 0, // Nije prvi potez (ne postoji nista pre prvog pogotka)
+            moves.get(moves.size() - 1).isHit()  // da li je poslednji potez bio pogodak
+        )
     then
         $d.setDecision(AgendaGroup.AFTER_HIT);
         System.out.println("U poslednjem potezu se desio pogodak!");
@@ -92,9 +50,44 @@ end
 //        update( $d );
 //end
 
-rule "Check last positions"
+
+
+
+rule "Check if checked Last Positions"
+    no-loop true
     when
-        $d : AgendaGroupDecision( decision == null,  lastPlayShipsPositions.size() > 0, !checkLastPositions, !checkCommonPositions)
+        $d : AgendaGroupDecision(
+            decision == null, // Nije postavljena agenda grupe
+            !checkLastPositions, // Nisu proverena poslednje igrane pozicije
+            !checkCommonPositions, // Nisu proverene uobicajne pozicije
+            lastPlayShipsPositions.size() != 0, // postoji zapis o poslednjoj partiji
+            $moves: moves
+        )
+        Number(intValue == 3) from accumulate( // ako sam proverio 3/5 brodova znaci da ne moram vise da ih proveravam
+            $move: Move(strategy == Strategy.CHECK_LAST_GAME_POSITIONS)
+            from $moves,
+            init( int count = 0; ),
+            action( count += 1; ),
+            result( count )
+        )
+    then
+        $d.setCheckLastPositions(true); // potvrdjujem da sam proverio brodove iz poslednje partije
+        System.out.println("Provereni su random brodovi iz prosle partije!");
+        System.out.println("----------------------------------------------------------------------------------------------------------------");
+        update( $d );
+end
+
+
+
+rule "Check last positions"
+//    lock-on-active true
+    when
+        $d : AgendaGroupDecision(
+            decision == null,                       // Nije postavljena agenda grupe
+            !checkLastPositions,                    // Nisam proverio poslednju pozicije brodova
+            !checkCommonPositions,                  // Nisam proverio uobicajne pozicije brodova
+            lastPlayShipsPositions.size() > 0       // postoje brodovi da se provere
+        )
     then
         $d.setDecision(AgendaGroup.LAST_POSITIONS);
         System.out.println("Nisu proverene pozicije slucajno odabranih brodova iz poslednje partije!");
@@ -103,10 +96,41 @@ rule "Check last positions"
 end
 
 
-rule "Check common positions"
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+rule "Check if checked common positions"
+    no-loop true
     when
-        $d : AgendaGroupDecision(decision == null, mostCommonShipPosition.size() > 0, checkLastPositions, !checkCommonPositions)
-        // neki query
+        $d : AgendaGroupDecision(
+            decision == null, // Nije postavljena agenda grupe
+            checkLastPositions,  // Proverio sam pozicije prodova
+            !checkCommonPositions,  // Nisam proverio ubicajne pozicije
+            mostCommonShipPosition.size() != 0, // Postoje neke pozicije da se provere
+            $moves: moves
+        )
+        Number(intValue == 5) from accumulate( // ako sam proverio 5/5 pozicija znaci da ne moram vise da koristim tu taktiku
+            $move: Move(strategy == Strategy.CHECK_COMMON_POSITIONS)
+            from $moves,
+            init( int count = 0; ),
+            action( count += 1; ),
+            result( count )
+        )
+    then
+        $d.setCheckCommonPositions(true);
+        System.out.println("Proverene su ceste pozicije!");
+        System.out.println("----------------------------------------------------------------------------------------------------------------");
+        update( $d );
+end
+
+
+rule "Check common positions"
+//    lock-on-active true
+    when
+        $d : AgendaGroupDecision(
+                decision == null, // Nije postavljena agenda grupe
+                checkLastPositions,  // Proverio sam pozicije prodova
+                !checkCommonPositions, // Nisam proverio ubicajne pozicije
+                mostCommonShipPosition.size() > 0
+            )
     then
         $d.setDecision(AgendaGroup.COMMON_POSITIONS);
         System.out.println("Nisu proverene cesto koriscene pozicije brodova!");
@@ -114,9 +138,15 @@ rule "Check common positions"
         update( $d );
 end
 
+
+
+
+
 rule "Finding enemy"
+//    lock-on-active true
     when
-        $d : AgendaGroupDecision(decision == null, checkCommonPositions, checkLastPositions )
+        $d : AgendaGroupDecision(decision == null, checkCommonPositions, checkLastPositions ) // Ako posle svega nije postavljena agenda grupe
+        // trazi neprijatelja...
     then
         $d.setDecision(AgendaGroup.FINDING_ENEMY);
         System.out.println("Potrebno je traziti neprijatelja!");
