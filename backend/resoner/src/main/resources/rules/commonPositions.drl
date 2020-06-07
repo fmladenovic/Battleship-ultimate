@@ -14,7 +14,7 @@ global List<Move> forRecheckMovesInCommon;
 global List<Tuple> availableCommonPositions;
 
 
-rule "Remove checkend position from common positions"
+rule "Remove checked position from common positions"
     agenda-group "common_positions"
     when
         $moveDecision : MoveDecision(

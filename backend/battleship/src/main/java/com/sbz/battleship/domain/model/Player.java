@@ -1,18 +1,19 @@
 package com.sbz.battleship.domain.model;
 
-import com.sbz.battleship.domain.model.enums.Formation;
-import com.sbz.battleship.domain.model.enums.Region;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import com.sbz.battleship.domain.model.enums.Formation;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor

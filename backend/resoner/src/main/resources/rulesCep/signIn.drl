@@ -1,0 +1,108 @@
+package signIn
+
+import com.sbz.battleship.domain.model.decisions.SignInDecision;
+import com.sbz.battleship.domain.model.Player;
+import java.util.UUID;
+
+
+declare WrongPasswordEvent
+    @role(event)
+    @expires(1m)
+    playerId: UUID
+    playerNick: String
+end
+
+declare PlayerFailToSignIn3TimesEvent
+    @role(event)
+    @expires(2m)
+    playerId: UUID
+    playerNick: String
+    reason: String
+end
+
+
+
+
+rule "Player is forbiden"
+    no-loop
+    when
+        $decision: SignInDecision( 
+            forbiden == null,
+            $id: playerId,
+            $nick: playerNick
+        )
+        PlayerFailToSignIn3TimesEvent( playerId.equals($id) )
+    then
+        System.out.println("Player is forbiden " + $nick + " because: Player Fail To SignIn 3 Times a row -> should wait");
+        $decision.setForbiden(true);
+        $decision.setReason("Player Fail To SignIn 3 Times in a row! Try again later!");
+        update($decision)
+end
+
+rule "Successful signing in!"
+    no-loop
+    when
+        $decision: SignInDecision( 
+            forbiden == null,
+            success,
+            $id: playerId,
+            $nick: playerNick
+        )
+        not( PlayerFailToSignIn3TimesEvent( playerId.equals($id) ))
+    then
+        System.out.println("Player " + $nick + " will play the game!");
+        $decision.setForbiden(false);
+        $decision.setReason("Player will play the game!");
+        update($decision)
+end
+
+rule "Fire event when player type wrong password!"
+    no-loop
+    when 
+        $decision: SignInDecision( 
+            forbiden == null,
+            !success,
+            $id: playerId,
+            $nick: playerNick
+        )
+    then
+        System.out.println("User " + $nick + " want to signin with wrong pussword! - new wrong password event!");
+        $decision.setForbiden(false);
+        $decision.setReason("User " + $nick + " want to signin with wrong pussword!");
+        update($decision)
+        insert(new WrongPasswordEvent($id, $nick));
+end
+
+rule "More then 3 signining tries in 10 minutes from single user"
+    no-loop
+    when
+        $wpe1: WrongPasswordEvent( 
+            $playerId: playerId
+        )
+        $decision: SignInDecision( 
+            playerId.equals($playerId),
+            $id: playerId,
+            $nick: playerNick
+        )
+        Number(intValue >= 2) from accumulate(
+            $wpe2: WrongPasswordEvent (
+                this != $wpe1,
+                playerId ==  $playerId,
+                this meets[1m] $wpe1
+            ),
+            count($wpe2)
+        )
+        not( PlayerFailToSignIn3TimesEvent( playerId.equals($playerId) ))
+
+    then
+        System.out.println("Player " + $nick + " is forbiden to sign in!");
+        $decision.setForbiden(true);
+        $decision.setReason("Player Fail To SignIn 3 Times in a row! Try again later!");
+        update($decision)
+        insert( new PlayerFailToSignIn3TimesEvent( $id, $nick, "Player Fail To SignIn 3 Times a row!") );
+end
+
+
+
+
+

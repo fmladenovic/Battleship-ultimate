@@ -21,7 +21,9 @@ rule "Remove checked ship"
             decision == null,
             lastPlayShipsPositions.size() > 0,
             moves.size() > 0,
-            lastPlayShipsPositions.get(0).isTupleInShip( moves.get(0).getPosition() )
+            lastPlayShipsPositions.get(0).isTupleInShip( moves.get(0).getPosition() ),
+            !readyForDecision
+
         )
     then
         System.out.println("Brod velicine " + $moveDecision.getLastPlayShipsPositions().get(0).getSize() + " je vec proveren!");
@@ -40,7 +42,9 @@ rule "Remove checked move"
             decision == null,
             lastPlayShipsPositions.size() > 0,
             moves.size() > 0,
-            !lastPlayShipsPositions.get(0).isTupleInShip( moves.get(0).getPosition() )
+            !lastPlayShipsPositions.get(0).isTupleInShip( moves.get(0).getPosition() ),
+            !readyForDecision
+
         )
     then
         forRecheckMoves.add($moveDecision.getMoves().get(0));
@@ -55,7 +59,8 @@ rule "Unchecked ship"
         $moveDecision: MoveDecision(
             lastPlayShipsPositions.size() > 0,
             moves.size() == 0,
-            decision == null
+            decision == null,
+            !readyForDecision
         )
     then
 
@@ -72,17 +77,38 @@ end
 
 
 
-rule "Generate move"
+
+rule "Set up for decision - last_positions"
+ agenda-group "last_positions"
+    when
+        $moveDecision : MoveDecision(
+            decision == null,
+            lastPlayShipsPositions.size() == 0,
+            !readyForDecision
+        )
+    then
+        $moveDecision.getLastPlayShipsPositions().addAll(availableShips);
+        $moveDecision.getMoves().addAll(forRecheckMoves);
+        availableShips.clear();
+        forRecheckMoves.clear();
+        $moveDecision.setReadyForDecision(true);
+        System.out.println("Postavljeni su slobodni brodovi");
+        update( $moveDecision );
+end
+
+
+rule "Generate move if exists last game ships"
     agenda-group "last_positions"
     when
         $moveDecision: MoveDecision(
-            lastPlayShipsPositions.size() == 0,
-            decision == null
+            decision == null,
+            lastPlayShipsPositions.size() != 0,
+            readyForDecision
         )
     then
         Random rand = new Random();
-        int randInt = rand.nextInt(availableShips.size());
-        Ship ship = (Ship)availableShips.get(randInt); // Moze da se desi da smo nekim drugim nacinom isprobali 3/5 brodova i onda ovde moze da pukne ?
+        int randInt = rand.nextInt($moveDecision.getLastPlayShipsPositions().size());
+        Ship ship = $moveDecision.getLastPlayShipsPositions().get(randInt); // Moze da se desi da smo nekim drugim nacinom isprobali 3/5 brodova i onda ovde moze da pukne ?
         randInt = rand.nextInt(ship.getSize());
 
         Move move = new Move(
@@ -99,3 +125,19 @@ rule "Generate move"
         update( $moveDecision );
 end
 
+
+rule "Generate move if don't exist last game ships!"
+    agenda-group "common_positions"
+    when
+        $moveDecision : MoveDecision(
+            decision == null,
+            lastPlayShipsPositions.size() == 0,
+            readyForDecision
+        )
+    then
+        Move move = Strategy.generateMove(Strategy.RANDOM, Region.FREE, $moveDecision.getMoves());
+        move.setStrategy(Strategy.CHECK_LAST_GAME_POSITIONS);
+        $moveDecision.setDecision(move);
+        System.out.println("Random generisan par je " + move.getPosition());
+        update( $moveDecision );
+end

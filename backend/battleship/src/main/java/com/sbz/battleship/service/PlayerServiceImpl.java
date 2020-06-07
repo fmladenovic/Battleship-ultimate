@@ -1,9 +1,24 @@
 package com.sbz.battleship.service;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.kie.api.runtime.KieContainer;
+import org.kie.api.runtime.KieSession;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
 import com.sbz.battleship.domain.exception.BadRequest;
 import com.sbz.battleship.domain.exception.NotFound;
-import com.sbz.battleship.domain.model.*;
+import com.sbz.battleship.domain.model.Game;
+import com.sbz.battleship.domain.model.Player;
+import com.sbz.battleship.domain.model.Ships;
+import com.sbz.battleship.domain.model.Tuple;
 import com.sbz.battleship.domain.model.decisions.FormationDecision;
+import com.sbz.battleship.domain.model.decisions.SignInDecision;
 import com.sbz.battleship.domain.model.enums.Formation;
 import com.sbz.battleship.repository.GameRepository;
 import com.sbz.battleship.repository.PlayerRepository;
@@ -11,11 +26,6 @@ import com.sbz.battleship.web.dto.GameDto;
 import com.sbz.battleship.web.dto.PlayerDto;
 import com.sbz.battleship.web.dto.SignInRequest;
 import com.sbz.battleship.web.dto.SignUpRequest;
-import org.kie.api.runtime.KieContainer;
-import org.kie.api.runtime.KieSession;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
 
 @Service
 public class PlayerServiceImpl implements PlayerService {
@@ -23,16 +33,19 @@ public class PlayerServiceImpl implements PlayerService {
     private final PlayerRepository playerRepository;
     private final GameRepository gameRepository;
     private final KieContainer kContainer;
+    private final KieSession signInSession;
 
 
     public PlayerServiceImpl(
             PlayerRepository playerRepository,
             GameRepository gameRepository,
-            KieContainer kieContainer
+            KieContainer kieContainer,
+            KieSession signInSession
             ) {
         this.playerRepository = playerRepository;
         this.gameRepository = gameRepository;
         this.kContainer = kieContainer;
+        this.signInSession = signInSession;
     }
 
 
@@ -71,8 +84,42 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public GameDto signIn(SignInRequest request) throws BadRequest, NotFound {
-        Player player = this.getByEmailAndPassword(request);
+    public GameDto signIn(SignInRequest request) throws BadRequest, NotFound {        
+       
+        if( request == null )
+            throw new BadRequest("Request must be given!");
+        
+        String email = request.getEmail();
+        String password = request.getPassword();
+        
+        if( email == null  || password == null )
+            throw new BadRequest("Fields are not filled!");
+        
+
+        
+        List<Player> players = this.playerRepository.findByEmail(email);
+        
+        if(players.size() == 0) 
+            throw new BadRequest("Wrong email!");
+
+        Player player = players.get(0);
+        boolean success = player.getPassword().equals(password);
+        
+        SignInDecision sid = new SignInDecision();
+        sid.setPlayerId(player.getId());
+        sid.setPlayerNick(player.getNick());
+        sid.setSuccess(success);
+        
+        
+        this.signInSession.insert(sid);
+        this.signInSession.fireAllRules();
+        
+        if( sid.getForbiden() )
+            throw new BadRequest(sid.getReason());
+        if(!success)
+            throw new BadRequest("Wrong password!");
+
+
 
         Game game = new Game();
         UUID id = UUID.randomUUID();

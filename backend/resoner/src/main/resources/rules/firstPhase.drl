@@ -32,6 +32,16 @@ rule "Get random formation from rest"
         update( $d );
 end
 
+rule "Remove decison if in most used formations"
+    when
+        $d : FormationDecision( decision != null, computerMostUsedFormations.contains(decision.getFormation()))
+    then
+        $d.getComputerFormations().remove($d.getDecision().getFormation());
+        System.out.println("Izbacena je formacija " + $d.getDecision().getFormation() + " zato sto je cesto koriscena");
+        $d.setDecision(null);
+        update( $d );
+end
+
 
 rule "Remove decison if in danger zone"
     when
@@ -44,17 +54,6 @@ rule "Remove decison if in danger zone"
         forRecheck.clear();
         update( $d );
 end
-
-rule "Remove decison if in most used formations"
-    when
-        $d : FormationDecision( decision != null, computerMostUsedFormations.contains(decision.getFormation()))
-    then
-        $d.getComputerFormations().remove($d.getDecision().getFormation());
-        System.out.println("Izbacena je formacija " + $d.getDecision().getFormation() + " zato sto je cesto koriscena");
-        $d.setDecision(null);
-        update( $d );
-end
-
 
 
 rule "Remove tuple that is not in current formation"
