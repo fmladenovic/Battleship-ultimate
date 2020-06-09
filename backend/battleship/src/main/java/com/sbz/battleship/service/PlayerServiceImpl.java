@@ -8,7 +8,6 @@ import java.util.UUID;
 
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.sbz.battleship.domain.exception.BadRequest;
@@ -33,19 +32,19 @@ public class PlayerServiceImpl implements PlayerService {
     private final PlayerRepository playerRepository;
     private final GameRepository gameRepository;
     private final KieContainer kContainer;
-    private final KieSession signInSession;
+    private final KieSession cepSession;
 
 
     public PlayerServiceImpl(
             PlayerRepository playerRepository,
             GameRepository gameRepository,
             KieContainer kieContainer,
-            KieSession signInSession
+            KieSession cepSession
             ) {
         this.playerRepository = playerRepository;
         this.gameRepository = gameRepository;
         this.kContainer = kieContainer;
-        this.signInSession = signInSession;
+        this.cepSession = cepSession;
     }
 
 
@@ -111,8 +110,8 @@ public class PlayerServiceImpl implements PlayerService {
         sid.setSuccess(success);
         
         
-        this.signInSession.insert(sid);
-        this.signInSession.fireAllRules();
+        this.cepSession.insert(sid);
+        this.cepSession.fireAllRules();
         
         if( sid.getForbiden() )
             throw new BadRequest(sid.getReason());

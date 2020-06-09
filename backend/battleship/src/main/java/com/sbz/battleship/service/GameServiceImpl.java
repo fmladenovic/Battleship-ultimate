@@ -1,20 +1,40 @@
 package com.sbz.battleship.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
+import org.kie.api.runtime.KieContainer;
+import org.kie.api.runtime.KieSession;
+import org.springframework.stereotype.Service;
+
 import com.sbz.battleship.domain.exception.BadRequest;
 import com.sbz.battleship.domain.exception.NotFound;
-import com.sbz.battleship.domain.model.*;
+import com.sbz.battleship.domain.model.Game;
+import com.sbz.battleship.domain.model.Move;
+import com.sbz.battleship.domain.model.Player;
+import com.sbz.battleship.domain.model.Ship;
+import com.sbz.battleship.domain.model.Ships;
+import com.sbz.battleship.domain.model.Tuple;
 import com.sbz.battleship.domain.model.decisions.AgendaGroupDecision;
 import com.sbz.battleship.domain.model.decisions.MoveDecision;
 import com.sbz.battleship.domain.model.enums.Formation;
 import com.sbz.battleship.domain.model.enums.Region;
 import com.sbz.battleship.domain.model.enums.Strategy;
+import com.sbz.battleship.event.PlayerMove;
 import com.sbz.battleship.repository.GameRepository;
 import com.sbz.battleship.repository.PlayerRepository;
-import org.kie.api.runtime.KieContainer;
-import org.kie.api.runtime.KieSession;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
 
 @Service
 public class GameServiceImpl implements GameService {
@@ -25,17 +45,21 @@ public class GameServiceImpl implements GameService {
     private final PlayerRepository playerRepository;
     private final GameRepository gameRepository;
     private final KieContainer kContainer;
+    private final KieSession cepSession;
+
 
 
     public GameServiceImpl(
             PlayerRepository playerRepository,
             GameRepository gameRepository,
-            KieContainer kieContainer
+            KieContainer kieContainer,
+            KieSession cepSession
 
     ) {
         this.playerRepository = playerRepository;
         this.gameRepository = gameRepository;
         this.kContainer = kieContainer;
+        this.cepSession = cepSession;
     }
 
     @Override
@@ -58,6 +82,10 @@ public class GameServiceImpl implements GameService {
 
         move.setHit(this.isShipHit(move.getPosition(), game.getPlayerShips()));
         game.getComputerMoves().add(move);
+        
+        if(!move.isHit())
+            this.cepSession.insert(new PlayerMove(game.getId(), true));
+        
         this.gameRepository.save(game);
         return move;
     }
@@ -130,6 +158,9 @@ public class GameServiceImpl implements GameService {
     @Override
     public void addPlayerMoves(String id, List<Move> moves) throws NotFound, BadRequest {
         Game game = this.getByIdFromRepo(id);
+        
+        this.cepSession.insert(new PlayerMove(game.getId(), false));
+        
         // TODO VALIDATE DATA
         game.getPlayerMoves().addAll(moves);
         this.gameRepository.save(game);
@@ -162,6 +193,8 @@ public class GameServiceImpl implements GameService {
 
 
         player.setMostCommonShipPosition(this.extractMostCommonShipsPositions(games));
+        
+//        this.cepSession.insert(game); END GAME
 
         // TODO VALIDATE DATA
         game.setWinner(victory);
@@ -173,6 +206,8 @@ public class GameServiceImpl implements GameService {
     @Override
     public void addPlayerShips(String id, List<Ship> ships) throws NotFound, BadRequest {
         Game game = this.getByIdFromRepo(id);
+        this.cepSession.insert(new PlayerMove(game.getId(), true));
+
         game.setPlayerShips(new Ships(Formation.PLAYER, ships));
         this.gameRepository.save(game);
     }

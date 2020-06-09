@@ -15,7 +15,7 @@ public class CepConfig {
 	}
 	
 	@Bean
-	public KieSession signInSession() {
+	public KieSession cepSession() {
 		return this.kieContainer.newKieSession("cepSession");
 	}
 	

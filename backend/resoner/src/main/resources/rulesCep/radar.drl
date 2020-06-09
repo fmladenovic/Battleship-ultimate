@@ -1,0 +1,16 @@
+package radar
+
+import com.sbz.battleship.event.Scan;
+
+
+rule "No scan in last 5 secounds!"
+    when
+        not(
+            Scan() 
+            over window:time(5s)
+        )
+    then
+        // System.out.println("Radar is off!");
+        // send signal that radar is off
+end
+

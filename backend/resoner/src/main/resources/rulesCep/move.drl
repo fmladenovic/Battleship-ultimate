@@ -1,0 +1,132 @@
+package move
+
+import java.util.UUID;
+
+import com.sbz.battleship.event.PlayerMove
+
+
+declare PlayerMoveEvent
+    @role(event)
+    @expires(1m)
+    gameId: UUID
+end
+
+declare WarningEvent
+    @role(event)
+    @expires(1m10s)
+    gameId: UUID
+end
+
+
+
+declare SwitchMoveEvent
+    @role(event)
+    @expires(40s)
+    gameId: UUID
+end
+    
+declare PlayerMoveAfterWarningEvent
+    @role(event)
+    @expires(30s)
+    gameId: UUID
+end
+
+
+
+rule "Players move begin"
+    no-loop
+    when
+        PlayerMove( startEnd, $gameId: gameId )
+    then
+        System.out.println("-------------------------------------------------------------------");
+
+        System.out.println("Player started move!");
+        insert( new PlayerMoveEvent($gameId) );
+        insert( new WarningEvent($gameId) );
+end
+
+rule "Player ends move on hist own 1"
+    no-loop
+    when
+        PlayerMove( !startEnd, $gameId: gameId )
+        $we: WarningEvent( gameId.equals($gameId) )
+        $pme: PlayerMoveEvent( gameId.equals($gameId) )
+    then
+        System.out.println("Player ends move! 1");
+        System.out.println("-------------------------------------------------------------------");
+        delete( $we );
+        delete( $pme );
+end
+
+rule "Player ends move on hist own 2"
+    no-loop
+    when
+        PlayerMove( !startEnd, $gameId: gameId )
+        $we: WarningEvent( gameId.equals($gameId) )
+    then
+        System.out.println("Player ends move! 2");
+        System.out.println("-------------------------------------------------------------------");
+        delete( $we );
+end
+
+rule "Player ends move on hist own 3"
+    no-loop
+    when
+        PlayerMove( !startEnd, $gameId: gameId )
+        $sm: SwitchMoveEvent( gameId.equals($gameId) )
+        $pme: PlayerMoveAfterWarningEvent( gameId.equals($gameId) )
+    then
+        System.out.println("Player ends move! 3");
+        System.out.println("-------------------------------------------------------------------");
+        delete( $sm );
+        delete( $pme );
+end
+
+rule "Player ends move on hist own 4"
+    no-loop
+    when
+        PlayerMove( !startEnd, $gameId: gameId )
+        $sm: SwitchMoveEvent( gameId.equals($gameId) )
+    then
+        System.out.println("Player ends move! 4");
+        System.out.println("-------------------------------------------------------------------");
+        delete( $sm );
+end
+
+
+rule "Warning to player to choose his move!"
+    no-loop
+    when
+        $we: WarningEvent( $gameId: gameId )
+        not ( PlayerMoveEvent( gameId.equals($gameId) ) )
+    then
+        System.out.println("Player is warned!");
+        insert( new SwitchMoveEvent($gameId) );
+        insert( new PlayerMoveAfterWarningEvent($gameId) );
+        delete($we)
+        // TODO
+end
+
+
+rule "Take move from player!"
+    no-loop
+    when
+        $sm: SwitchMoveEvent( $gameId: gameId )
+        not ( PlayerMoveAfterWarningEvent( gameId.equals($gameId) ) )
+    then
+        System.out.println("Move has been taken from player!");
+        System.out.println("-------------------------------------------------------------------");
+        delete($sm)
+        // TODO
+end
+
+rule "Delete from memory PlayerMove"
+    no-loop
+    when
+        $m: PlayerMove()
+    then
+        delete($m)
+end
+
+
+
