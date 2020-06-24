@@ -27,8 +27,8 @@ export class GameService {
   phases = this.phasesOb.asObservable();
 
   
-  private gameOb = new BehaviorSubject<Game>(null);
-  private gameHolder: Game = null;
+  private gameOb = new BehaviorSubject<Game>(new Game());
+  private gameHolder: Game = new Game();
   game = this.gameOb.asObservable();
 
   playerMovesInRow: Move[] = [];
@@ -108,6 +108,28 @@ export class GameService {
     this.setGame(this.gameHolder);
   }
 
+
+
+  handleAfk(notice: any) {
+    // console.log(this.gameHolder.id , notice.gameId)
+    if(notice.gameId === this.gameHolder.id) {
+      if( !notice.status ) {
+        Swal.fire(
+          'HURRY UP!',
+          'Your turn is about to end!',
+          'warning'
+        );
+      }
+      else {
+        Swal.fire(
+          'SORRY!',
+          'You have lost your move!',
+          'error'
+        ).
+        then(() => this.computerPlay() );
+      }
+    }
+  }
 
   computerPlay() {
     // this.spinnerService.showSpinner(); Enable animation for bombing
@@ -259,6 +281,14 @@ export class GameService {
       'Ooops!',
       message,
       'error'
+    );
+  }
+
+  warnMessage( message: string ) {
+    Swal.fire(
+      'HURRY UP!',
+      message,
+      'warning'
     );
   }
 

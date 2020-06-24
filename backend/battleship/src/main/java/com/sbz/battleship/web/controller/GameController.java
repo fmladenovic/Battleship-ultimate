@@ -1,22 +1,23 @@
 package com.sbz.battleship.web.controller;
 
+import java.util.List;
+
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.sbz.battleship.domain.exception.BadRequest;
 import com.sbz.battleship.domain.exception.NotFound;
 import com.sbz.battleship.domain.model.Move;
 import com.sbz.battleship.domain.model.Ship;
-import com.sbz.battleship.domain.model.Tuple;
-import com.sbz.battleship.domain.model.enums.Region;
-import com.sbz.battleship.domain.model.enums.Strategy;
 import com.sbz.battleship.service.GameService;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import com.sbz.battleship.web.dto.AfkDto;
 
 @RestController
 @RequestMapping(value = "api/games")
@@ -100,6 +101,11 @@ public class GameController {
     ) throws NotFound, BadRequest {
         this.gameService.endGame(id, victory);
         return ResponseEntity.ok("");
+    }
+    
+    @SendTo("/topic/notice")
+    public AfkDto notice (AfkDto afk) {
+        return afk;
     }
     
 }

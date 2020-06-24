@@ -4,16 +4,22 @@ import java.util.UUID;
 
 import com.sbz.battleship.event.PlayerMove
 
+import com.sbz.battleship.service.AfkService;
+
+
+global AfkService afkService;
+
+
 
 declare PlayerMoveEvent
     @role(event)
-    @expires(1m)
+    @expires(30s)
     gameId: UUID
 end
 
 declare WarningEvent
     @role(event)
-    @expires(1m10s)
+    @expires(35s)
     gameId: UUID
 end
 
@@ -21,13 +27,13 @@ end
 
 declare SwitchMoveEvent
     @role(event)
-    @expires(40s)
+    @expires(25s)
     gameId: UUID
 end
     
 declare PlayerMoveAfterWarningEvent
     @role(event)
-    @expires(30s)
+    @expires(20s)
     gameId: UUID
 end
 
@@ -104,7 +110,7 @@ rule "Warning to player to choose his move!"
         insert( new SwitchMoveEvent($gameId) );
         insert( new PlayerMoveAfterWarningEvent($gameId) );
         delete($we)
-        // TODO
+        afkService.warnFrontend($gameId);
 end
 
 
@@ -117,7 +123,7 @@ rule "Take move from player!"
         System.out.println("Move has been taken from player!");
         System.out.println("-------------------------------------------------------------------");
         delete($sm)
-        // TODO
+        afkService.changeFrontend($gameId);
 end
 
 rule "Delete from memory PlayerMove"

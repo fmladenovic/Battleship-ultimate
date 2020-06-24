@@ -46,6 +46,7 @@ public class GameServiceImpl implements GameService {
     private final GameRepository gameRepository;
     private final KieContainer kContainer;
     private final KieSession cepSession;
+    private final AfkService afkService;
 
 
 
@@ -53,13 +54,17 @@ public class GameServiceImpl implements GameService {
             PlayerRepository playerRepository,
             GameRepository gameRepository,
             KieContainer kieContainer,
-            KieSession cepSession
-
+            KieSession cepSession,
+            AfkService afkService
     ) {
         this.playerRepository = playerRepository;
         this.gameRepository = gameRepository;
         this.kContainer = kieContainer;
         this.cepSession = cepSession;
+        this.afkService = afkService;
+        
+        this.cepSession.setGlobal("afkService", this.afkService);
+
     }
 
     @Override

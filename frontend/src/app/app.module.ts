@@ -10,6 +10,7 @@ import { BattleshipComponentsModule } from './battleship-components/battleship-c
 import { GameComponentsModule } from './game-components/game-components.module';
 import { AuthComponentsModule } from './auth-components/auth-components.module';
 import { HttpClientModule } from '@angular/common/http';
+import { SharedModule } from './shared/shared.module';
 
 @NgModule({
   declarations: [
@@ -26,7 +27,8 @@ import { HttpClientModule } from '@angular/common/http';
     AuthComponentsModule,
 
     BoardComponentsModule,
-    BattleshipComponentsModule
+    BattleshipComponentsModule,
+    SharedModule
   ],
   providers: [],
   bootstrap: [AppComponent]

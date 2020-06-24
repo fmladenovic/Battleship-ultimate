@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { GameService } from '../service/game.service';
 import { Game } from 'src/app/shared/model/game';
+import { WebSocketService } from 'src/app/shared/service/web-socket.service';
 
 @Component({
   selector: 'app-game',
@@ -13,13 +14,17 @@ export class GameComponent implements OnInit {
   game: Game;
 
   constructor(
-    private gameService: GameService
+    private gameService: GameService,
+    private webSocketService: WebSocketService
   ) { }
 
   ngOnInit(): void {
+    this.webSocketService.connect();
+
     this.gameService.phases.subscribe( data => this.phases = data );
     this.gameService.game.subscribe( data => this.game = data );
-    
   }
+
+  
 
 }

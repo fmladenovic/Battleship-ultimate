@@ -9,6 +9,7 @@ import { GameService } from './service/game.service';
 import { BoardComponentsModule } from '../board-components/board-components.module';
 import { BattleshipComponentsModule } from '../battleship-components/battleship-components.module';
 import { GamePhaseEndComponent } from './game-phase-end/game-phase-end.component';
+import { SharedModule } from '../shared/shared.module';
 
 
 
@@ -29,7 +30,8 @@ import { GamePhaseEndComponent } from './game-phase-end/game-phase-end.component
     AuthComponentsModule,
 
     BoardComponentsModule,
-    BattleshipComponentsModule
+    BattleshipComponentsModule,
+    SharedModule
   ],
   providers: [
     GameService
