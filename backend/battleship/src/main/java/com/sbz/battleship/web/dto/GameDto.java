@@ -1,15 +1,15 @@
 package com.sbz.battleship.web.dto;
 
+import java.util.List;
+import java.util.UUID;
+
 import com.sbz.battleship.domain.model.Move;
-import com.sbz.battleship.domain.model.Player;
 import com.sbz.battleship.domain.model.Ships;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
-import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor

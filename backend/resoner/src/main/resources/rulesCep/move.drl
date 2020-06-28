@@ -100,7 +100,7 @@ rule "Player ends move on hist own 4"
 end
 
 
-rule "Warning to player to choose his move!"
+rule "Warn player to choose his move!"
     no-loop
     when
         $we: WarningEvent( $gameId: gameId )
