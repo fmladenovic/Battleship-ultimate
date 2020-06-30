@@ -39,16 +39,19 @@ rule "Last move was hit"
         update( $d );
 end
 
-//rule "Checking field after hit"
-//    lock-on-active true
-//    when
-//        $d : AgendaGroupDecision(decision == null, moves.size() > 0)
-//        // query
-//    then
-//        $d.setDecision(AgendaGroup.AFTER_HIT);
-//        System.out.println("Posle pogotka smo promasili, pa pokusavamo da ispravimo!");
-//        update( $d );
-//end
+rule "Checking field after hit"
+    when
+        $d : AgendaGroupDecision(
+	        decision == null, 
+	        moves.size() > 0,
+	        moves.get(moves.size() - 1).getStrategy() == Strategy.AFTER_HIT
+        )
+    then
+        $d.setDecision(AgendaGroup.AFTER_HIT);
+        System.out.println("Posle pogotka smo promasili, pa pokusavamo da ispravimo!");
+        System.out.println("----------------------------------------------------------------------------------------------------------------");
+        update( $d );
+end
 
 
 

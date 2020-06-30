@@ -96,7 +96,6 @@ public class GameServiceImpl implements GameService {
     }
 
     private Move resoner(Game game, Player player) {
-        System.out.println("GAME MOVE SIZE CHECK: " + game.getComputerMoves().size());
         MoveDecision moveDecision = new MoveDecision();
         moveDecision.setMostCommonShipPosition(player.getMostCommonShipPosition());
         moveDecision.setLastPlayShipsPositions(player.getLastPlayShipsPositions());
@@ -130,9 +129,7 @@ public class GameServiceImpl implements GameService {
         kieSession.insert(moveDecision);
         switch(agendaGroupDecision.getDecision()) {
             case AFTER_HIT:
-                // kieSession.getAgenda().getAgendaGroup("after_hit").setFocus();
-                moveDecision.setDecision( Strategy.generateMove(Strategy.AFTER_HIT, Region.FREE, game.getComputerMoves()) ); //DELETE
-                System.out.println("Random generated - todo");
+                kieSession.getAgenda().getAgendaGroup("after_hit").setFocus();
                 break;
             case LAST_POSITIONS:
                 kieSession.getAgenda().getAgendaGroup("last_positions").setFocus();

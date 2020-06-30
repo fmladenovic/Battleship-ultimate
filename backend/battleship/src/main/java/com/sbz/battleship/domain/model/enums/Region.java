@@ -34,7 +34,12 @@ public enum Region {
     RIGHT_BOTTOM_RIGHT_BOTTOM,
     RIGHT_BOTTOM_MIDDLE,
 
-    FREE; // Full table
+    FREE,
+    
+    AFTER_HIT_LEFT,
+    AFTER_HIT_RIGHT,
+    AFTER_HIT_UP,
+    AFTER_HIT_DOWN; // Full table
 
     public static List<Tuple> positions( Region region ) {
         switch(region) {
