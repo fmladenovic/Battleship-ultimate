@@ -1,1 +1,181 @@
 package secondPhase
+
+function boolean doExploreRegion( Region region, MoveDecision moveDecision ) {
+    double regionSize = Region.positions(region).size();
+    double restSize = Strategy.removeUsedFields( region, moveDecision.getMoves() ).size();
+    return (regionSize/3.0) < restSize;
+}
+
+function Move findLastRegionExplored( MoveDecision moveDecision ) {
+    List<Move> moves = moveDecision.getMoves();
+    Set<Region> regions = moveDecision.getRegions();
+    for( int i = moves.size() - 1; i >= 0; i-- ) {
+        if( regions.contains(moves.get(i).getRegion()) ) {
+            return moves.get(i);
+        }
+    }
+    return null;
+}
+
+
+function boolean isNotFullAndHasHit( Region region, MoveDecision moveDecision ) {
+    int restSize = Strategy.removeUsedFields( region, moveDecision.getMoves() ).size();
+    if( restSize == 0 ) return false;
+
+    List<Move> moves = moveDecision.getMoves();
+    for( Move move : moves ) {
+        if( move.isHit() && move.getRegion() == region ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+
+rule "Insert not explored regions"
+    agenda-group "finding_enemy"
+    no-loop
+    when
+        $md: MoveDecision( 
+        	decision == null,
+            !readyForDecision,
+            $moves: moves
+        )
+        Number(intValue < 13 ) from accumulate(
+            $move: Move(hit) from $moves,
+            count($move)
+        )
+        $notExploredRegions: List() from collect ( $reg: Region( eval(doExploreRegion($reg, $md)) ) from $md.getRegions() )
+        eval( $notExploredRegions.size() > 0 )
+    then
+        System.out.println("Insert not explored regions");
+        System.out.println("Dostupni regioni: " + $notExploredRegions.size());
+
+        Move move = findLastRegionExplored($md);
+
+        System.out.println("Poslednji istrazivan region: " +  move);
+
+        $md.setReadyForDecision(true);
+        update($md);
+        insert(move);
+        insert($notExploredRegions);
+end
+
+
+rule "Insert regions with hits which is not fully explored"
+    agenda-group "finding_enemy"
+    no-loop
+    when
+        $md: MoveDecision( 
+        	decision == null,
+            !readyForDecision,
+            $moves: moves
+        )
+        Number(intValue >= 13 ) from accumulate(
+            $move: Move(hit) from $moves,
+            count($move)
+        )
+        $notExploredRegions: List() from collect ( $reg: Region( eval(isNotFullAndHasHit($reg, $md)) ) from $md.getRegions() )
+        eval( $notExploredRegions.size() > 0 )
+    then
+        System.out.println("Insert regions with hits which is not fully explored");
+        System.out.println("Dostupni regioni: " + $notExploredRegions.size());
+
+        Move move = findLastRegionExplored($md);
+
+        System.out.println("Poslednji istrazivan region: " +  move);
+
+        $md.setReadyForDecision(true);
+        update($md);
+        insert(move);
+        insert($notExploredRegions);
+end
+
+
+rule "Continue with no explored regions"
+    agenda-group "finding_enemy"
+    no-loop
+    when
+        $md: MoveDecision( 
+        	decision == null,
+            !readyForDecision,
+            $moves: moves
+        )
+        $notExploredRegions: List() from collect ( $reg: Region( eval(doExploreRegion($reg, $md)) ) from $md.getRegions() )
+        not( List() )
+    then
+        System.out.println("Continue with no explored regions");
+        System.out.println("Dostupni regioni: " + $notExploredRegions.size());
+
+        Move move = findLastRegionExplored($md);
+
+        System.out.println("Poslednji istrazivan region: " +  move);
+
+        $md.setReadyForDecision(true);
+        update($md);
+        insert(move);
+        insert($notExploredRegions);
+end
+
+
+
+rule "Choose from last explored region if this region is free"
+    agenda-group "finding_enemy"
+    when
+        $md: MoveDecision( 
+        	decision == null,
+            readyForDecision
+        )
+        $move: Move()
+        $notExplored: List( size() > 0 )
+        eval( $notExplored.contains($move.getRegion()) )
+    then
+        // Random rand = new Random();
+        // int randInt = rand.nextInt( $available.size() );
+
+        Move move = Strategy.generateMove($move.getStrategy(), $move.getRegion(), $md.getMoves());
+        $md.setDecision(move);
+        System.out.println("Potez je " + move);
+        update($md);
+end
+
+rule "Choose from random region with random strategy"
+    agenda-group "finding_enemy"
+    when
+        $md: MoveDecision( 
+        	decision == null,
+            readyForDecision
+        )
+        $notExplored: List( size() > 0 )
+    then
+        Random rand = new Random();
+        int randStrat = rand.nextInt( $md.getStrategies().size() );
+        int randReg = rand.nextInt( $notExplored.size() );
+
+
+        Move move = Strategy.generateMove( (Strategy)IterableUtils.get($md.getStrategies(), randStrat), (Region)$notExplored.get(randReg), $md.getMoves());
+        $md.setDecision(move);
+        System.out.println("Potez je " + move);
+        update($md);
+end
+
+
+
+rule "Choose random from table in case that we lost all options"
+    agenda-group "finding_enemy"
+    when
+        $md: MoveDecision( 
+        	decision == null,
+            readyForDecision
+        )
+    then
+        Move move = Strategy.generateMove(Strategy.RANDOM, Region.FREE, $md.getMoves());
+        move.setStrategy(Strategy.RANDOM);
+        $md.setDecision(move);
+       	System.out.println("Istrazili smo sve opcije pa biramo slucajno polje sa table...");
+        System.out.println("Random generisan par je " + move.getPosition());
+		
+		update( $md );
+end

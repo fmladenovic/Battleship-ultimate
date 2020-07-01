@@ -1,11 +1,12 @@
 package com.sbz.battleship.domain.model.enums;
 
-import com.sbz.battleship.domain.model.Tuple;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+
+import com.sbz.battleship.domain.model.Tuple;
 
 public enum Region {
     PLAYER, // Player moves
@@ -142,7 +143,7 @@ public enum Region {
     }
 
 
-    static Set<Region> getAllRegions() {
+    public static Set<Region> getAllRegions() {
 
         Set<Region> regions = new HashSet<>();
 
@@ -170,8 +171,8 @@ public enum Region {
         regions.add( RIGHT_BOTTOM_RIGHT_BOTTOM );
         regions.add( RIGHT_BOTTOM_MIDDLE );
 
-        regions.add( FREE );
-
+//        regions.add( FREE );
+        
         return regions;
     }
 

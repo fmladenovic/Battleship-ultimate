@@ -15,8 +15,12 @@ public class Move {
 
     private Tuple position;
     private boolean hit;
-
-    private Strategy strategy;
+	private Strategy strategy;
     private Region region;
 
+    @Override
+	public String toString() {
+		return "Move [position=" + position + ", strategy=" + strategy + ", region=" + region + "]";
+	}
+    
 }

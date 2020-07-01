@@ -33,8 +33,6 @@ public enum Strategy {
             case AFTER_HIT:
                 return random(region, executedMoves);
 
-            case AROUND_LAST_MOVE:
-                return aroundLastMove(region, executedMoves);
 
             case AROUND_SHIP:
                 return null;
@@ -77,70 +75,10 @@ public enum Strategy {
         return prepareMove(tuples.get(i%len), region, strategy);
     }
 
-    private static Move afterHit(Region region, List<Move> executedMoves) {
-        List<Move> extractedHits = extractHitsInRow(executedMoves);
-        int len = extractedHits.size();
-        if( len == 0 ) {
-            return random(region, executedMoves);
-        } else if( len == 1 ) {
-            return aroundLastMove(Region.FREE, executedMoves);
-        } else {
-            Tuple orientation = checkOrientation(extractedHits);
-            if(orientation == null) {
-                return aroundLastMove(Region.FREE, executedMoves);
-            } else {
-                if(orientation.getX() == 1) {
-                    sortY(extractedHits);
-                    Tuple copyTuple = extractedHits.get(executedMoves.size()-1).getPosition();
-                    Tuple newTuple = new Tuple(copyTuple.getX(), copyTuple.getY()+1);
-                    if( checkTuple(newTuple, executedMoves) )
-                        return prepareMove(newTuple, region, Strategy.AFTER_HIT);
-                    copyTuple = extractedHits.get(0).getPosition();
-                    newTuple = new Tuple(copyTuple.getX(), copyTuple.getY()-1);
-                    if( checkTuple(newTuple, executedMoves) )
-                        return prepareMove(newTuple, region, Strategy.AFTER_HIT);
-                    return random(region, executedMoves); // ask resoner again
-                } else {
-                    sortX(extractedHits);
-                    Tuple copyTuple = extractedHits.get(executedMoves.size()-1).getPosition();
-                    Tuple newTuple = new Tuple(copyTuple.getX()+1, copyTuple.getY());
-                    if( checkTuple(newTuple, executedMoves) )
-                        return prepareMove(newTuple, region, Strategy.AFTER_HIT);
-                    copyTuple = extractedHits.get(0).getPosition();
-                    newTuple = new Tuple(copyTuple.getX()-1, copyTuple.getY());
-                    if( checkTuple(newTuple, executedMoves) )
-                        return prepareMove(newTuple, region, Strategy.AFTER_HIT);
-                    return random(region, executedMoves); // ask resoner again
-                }
-
-            }
-        }
-    }
-
-    private static Move aroundLastMove(Region region, List<Move> executedMoves) {
-
-        Tuple lastPosition = executedMoves.get(executedMoves.size()-1).getPosition();
-        Tuple newTuple = new Tuple(lastPosition.getX()+1, lastPosition.getY());
-        if(checkTuple(newTuple, executedMoves))
-            return prepareMove(newTuple, region, AROUND_LAST_MOVE);
-
-        newTuple = new Tuple(lastPosition.getX() - 1, lastPosition.getY());
-        if(checkTuple(newTuple, executedMoves))
-            return prepareMove(newTuple, region, AROUND_LAST_MOVE);
-
-        newTuple = new Tuple(lastPosition.getX(), lastPosition.getY() + 1);
-        if(checkTuple(newTuple, executedMoves))
-            return prepareMove(newTuple, region, AROUND_LAST_MOVE);
-
-        newTuple = new Tuple(lastPosition.getX(), lastPosition.getY()  - 1);
-        if(checkTuple(newTuple, executedMoves))
-            return prepareMove(newTuple, region, AROUND_LAST_MOVE);
-
-        return random(region, executedMoves);
-    }
 
 
-    private static List<Tuple> removeUsedFields( Region region, List<Move> executedMoves ) {
+
+    public static List<Tuple> removeUsedFields( Region region, List<Move> executedMoves ) {
         List<Tuple> tuples = Region.positions(region);
         tuples.removeIf(tuple -> {
             for(Move move : executedMoves) {
@@ -170,7 +108,8 @@ public enum Strategy {
         return counter;
     }
 
-    private static void sort(List<Tuple> tuples) {
+    @SuppressWarnings("unchecked")
+	private static void sort(List<Tuple> tuples) {
         Collections.sort(tuples, new Comparator() {
             public int compare(Object o1, Object o2) {
                 Integer y1 = ((Tuple) o1).getY();
@@ -185,24 +124,24 @@ public enum Strategy {
             }});
     }
 
-    private static void sortX(List<Move> moves) {
-        Collections.sort(moves, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                Integer x1 = ((Move) o1).getPosition().getX();
-                Integer x2 = ((Move) o2).getPosition().getX();
-                return x1.compareTo(x2);
-            }});
-    }
-
-    private static void sortY(List<Move> moves) {
-        Collections.sort(moves, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                Integer y1 = ((Move) o1).getPosition().getY();
-                Integer y2 = ((Move) o2).getPosition().getY();
-                return  y1.compareTo(y2);
-                }
-            });
-    }
+//    private static void sortX(List<Move> moves) {
+//        Collections.sort(moves, new Comparator() {
+//            public int compare(Object o1, Object o2) {
+//                Integer x1 = ((Move) o1).getPosition().getX();
+//                Integer x2 = ((Move) o2).getPosition().getX();
+//                return x1.compareTo(x2);
+//            }});
+//    }
+//
+//    private static void sortY(List<Move> moves) {
+//        Collections.sort(moves, new Comparator() {
+//            public int compare(Object o1, Object o2) {
+//                Integer y1 = ((Move) o1).getPosition().getY();
+//                Integer y2 = ((Move) o2).getPosition().getY();
+//                return  y1.compareTo(y2);
+//                }
+//            });
+//    }
 
     private static List<Move> extractHitsInRow(List<Move> executedMoves) {
         List<Move> moves = new ArrayList<>();
@@ -240,6 +179,15 @@ public enum Strategy {
         return null;
     }
 
+    
+    public static Set<Strategy> getAllStrategyes() {
+
+        Set<Strategy> strategies = new HashSet<>();
+        strategies.add( EVERY_SECOND_VERTICAL );
+        strategies.add( EVERY_SECOND_HORIZONTAL );
+
+        return strategies;
+    }
 
 
 }

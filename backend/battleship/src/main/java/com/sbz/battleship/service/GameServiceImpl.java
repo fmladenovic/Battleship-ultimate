@@ -100,8 +100,8 @@ public class GameServiceImpl implements GameService {
         moveDecision.setMostCommonShipPosition(player.getMostCommonShipPosition());
         moveDecision.setLastPlayShipsPositions(player.getLastPlayShipsPositions());
         moveDecision.setMoves(game.getComputerMoves()); // played moves in this game
-        moveDecision.setRegions(null); // use rules to decide which region you should use
-        moveDecision.setStrategies(null); // use rules to decide which strategies you should use
+        moveDecision.setRegions(Region.getAllRegions()); // use rules to decide which region you should use
+        moveDecision.setStrategies(Strategy.getAllStrategyes()); // use rules to decide which strategies you should use
         moveDecision.setReadyForDecision(false);
         moveDecision.setDecision(null);
 
@@ -110,8 +110,8 @@ public class GameServiceImpl implements GameService {
                 player.getMostCommonShipPosition(),
                 game.getComputerMoves(),
                 null,
-                false,
-                false
+                false, // TODO: FALSE!!!!!!!!!!!!
+                false  // TODO: FALSE!!!!!!!!!!!!
         );
         KieSession kieSession = this.kContainer.newKieSession("session");
         kieSession.setGlobal("forRecheckMoves", new ArrayList<Move>());
@@ -138,9 +138,7 @@ public class GameServiceImpl implements GameService {
                 kieSession.getAgenda().getAgendaGroup("common_positions").setFocus();
                 break;
             default: // FINDING_ENEMY
-                // kieSession.getAgenda().getAgendaGroup("finding_enemy").setFocus();
-                moveDecision.setDecision( Strategy.generateMove(Strategy.RANDOM, Region.FREE, game.getComputerMoves()) ); //DELETE
-                System.out.println("Random generated - todo");
+                kieSession.getAgenda().getAgendaGroup("finding_enemy").setFocus();
                 break;
         }
         kieSession.fireAllRules();

@@ -1,16 +1,5 @@
 package secondPhase
 
-import java.util.Random;
-import java.util.List;
-import java.util.ArrayList;
-
-import com.sbz.battleship.domain.model.Move;
-import com.sbz.battleship.domain.model.Tuple;
-import com.sbz.battleship.domain.model.enums.Strategy;
-import com.sbz.battleship.domain.model.enums.Region;
-
-import com.sbz.battleship.domain.model.decisions.MoveDecision;
-
 
 function List<Move> canBeChosen( MoveDecision moveDecision ) {
 
@@ -77,11 +66,12 @@ function Move checkTail( MoveDecision moveDecision ) {
 		} else if(lastMove.getRegion() == Region.AFTER_HIT_DOWN) {
 			x--;
 			move = new Move( new Tuple(x, y), false,  Strategy.AFTER_HIT,  Region.AFTER_HIT_UP);
-		} else {
-			System.out.println( "Neki region " + lastMove.getRegion() + " x: " + x + " y: " + y );
-		}
+		} 
+		// else {
+		// 	System.out.println( "Neki region " + lastMove.getRegion() + " x: " + x + " y: " + y );
+		// }
 
-		System.out.println( "x: " + x + " y: " + y );
+		// System.out.println( "x: " + x + " y: " + y );
 		if( move == null || x < 0 || x >= 14 || y < 0 || y >= 14) return null;
 
 		inMoves = false;
@@ -93,7 +83,7 @@ function Move checkTail( MoveDecision moveDecision ) {
 			}
 		} 
 	}
-	System.out.println( move.getPosition() );
+	// System.out.println( move.getPosition() );
 	return move;
 }
 
@@ -141,25 +131,27 @@ function Move cont( MoveDecision moveDecision ) {
 
 rule "Continue in same direction"
 	agenda-group "after_hit"
-	lock-on-active
+	no-loop
     when
         $md: MoveDecision(
         	decision == null,
+			!readyForDecision,
 			moves.size() > 0,
         	$lastMove: moves.get(moves.size() - 1),
         	$lastMove.isHit(),
         	$lastMove.getStrategy() == Strategy.AFTER_HIT
         )
     then
-    	$md.setDecision( cont( $md ) );
-		System.out.println( $md.getDecision() != null ? "Nastavi potapanje u istom pravcu..." : "");
+		Move move = cont( $md );
+    	$md.setDecision( move );
+		System.out.println( "Nastavi potapanje u istom pravcu... " + move );
 
     	update( $md );
 end
 
 rule "Check ships tail if commit hit and then miss"
 	agenda-group "after_hit"
-    no-loop
+	no-loop
     when
         $md: MoveDecision(
         	decision == null,
@@ -179,27 +171,40 @@ end
 rule "Extract available moves"
     agenda-group "after_hit"
 	no-loop
+
     when
         $md: MoveDecision(
-        	decision == null
+        	decision == null,
+			!readyForDecision
         )
     then
-		System.out.println( "Insertovana je lista slobodnih poteza...");
-    	insert( canBeChosen($md) );    	
+		// List<Move> moves = $md.getMoves();
+		// List<Move> canBeChosenL = canBeChosen($md);
+		// Move lastMove = moves.get(moves.size() - 1);
+		// System.out.println("Moves size > 1: " + (moves.size() > 1));
+		// System.out.println("LastMove is hit: " + lastMove.isHit());
+		// System.out.println("LastMove strategy: " + lastMove.getStrategy());
+		// System.out.println("CanBeChosen length: " + canBeChosenL.size() );
+		// System.out.println( "Insertovana je lista slobodnih poteza..." );
+		$md.setReadyForDecision( true );
+		update( $md );
+    	insert( canBeChosen($md) );   
+
 end
 
 rule "Check ships tail if we are left without fields in this direction"
 	agenda-group "after_hit"
-    no-loop
+	no-loop
     when
         $md: MoveDecision(
         	decision == null,
+			readyForDecision,
 			moves.size() > 1,
         	$lastMove: moves.get(moves.size() - 1),
 			$lastMove.isHit(),
         	$lastMove.getStrategy() == Strategy.AFTER_HIT
         )
-		List( size() <= 2 )
+		List( size() < 3 )
     then
     	$md.setDecision( checkTail( $md ) );
 		System.out.println( "Proveri da li se brod prostire u drugom pravcu zato sto ne mozemo vise da proveravamo ovaj pravac...");
@@ -229,6 +234,7 @@ end
 
 rule "Choose random from table if we are explored all options"
     agenda-group "after_hit"
+	no-loop
     when
         $md: MoveDecision( 
         	decision == null
