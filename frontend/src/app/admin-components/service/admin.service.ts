@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import Swal from 'sweetalert2';
 
 
 const RULES = 'api/rules';
@@ -16,60 +17,50 @@ export class AdminService {
   ) { }
 
 
-  changeStyle( i: number ) {
-    let params;
-    if( i === 0 ) {
-      params = {
-        playerRegular: 10,
-        playerExtended: 10
-      };
-    }
-    if( i === 1 ) {
-      params = {
-        playerRegular: 20,
-        playerExtended: 10
-      };
-    }
-    if( i === 2 ) {
-      params = {
-        playerRegular: 40,
-        playerExtended: 20
-      };
-    }
-    this.http.post(RULES + `/afk`, params).subscribe(
-      () => {},
-      error => console.error(error) 
+  changeStatus( golden: number, silver: number, bronze: number ) {
+    const params = {
+      golden,
+      silver,
+      bronze
+    };
+    this.http.post(RULES + `/status`, params).subscribe(
+      () => this.successMessage( 'Rule is crated!'),
+      error => {
+        console.error(error);
+        this.errorMessage('Something went wrong!');
+      }
     );
   }
 
-  changeChances( i: number ) {
-    let params = {};
-    if( i === 0 ) {
-      params = {
-        n: 2,
-        denieTime: 1,
-        failTime: 2
-      };
-    }
-    if( i === 1 ) {
-      params = {
-        n: 3,
-        denieTime: 1,
-        failTime: 2
-      };
-    }
-    if( i === 2 ) {
-      params = {
-        n: 5,
-        denieTime: 2,
-        failTime: 10
-      };
-    }
-    this.http.post(RULES + `/signin`, params).subscribe(
-      () => {},
-      error => console.error(error) 
+  changeMessage( message1: number, message2: number, message3: number ) {
+    const params = {
+      message1,
+      message2,
+      message3
+    };
+    this.http.post(RULES + `/message`, params).subscribe(
+      () => this.successMessage( 'Rule is crated!'),
+      error => {
+        console.error(error);
+        this.errorMessage('Something went wrong!');
+      }
     );
   }
 
 
+  successMessage( message: string ) {
+    Swal.fire(
+      'Success!',
+      message,
+      'success'
+    );
+  }
+
+  errorMessage( message: string ) {
+    Swal.fire(
+      'Ooops!',
+      message,
+      'error'
+    );
+  }
 }

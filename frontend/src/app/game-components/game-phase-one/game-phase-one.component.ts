@@ -14,11 +14,16 @@ export class GamePhaseOneComponent implements OnInit {
 
   setShip = -1;
 
+  status: string;
+
   constructor(
     private gameService: GameService
   ) { }
 
   ngOnInit() {
+    this.gameService.game.subscribe( data => this.status = data.player.status );
+    console.log(this.status);
+
   }
 
   onChosenShip($event: [number, number]) {

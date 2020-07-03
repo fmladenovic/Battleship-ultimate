@@ -1,0 +1,70 @@
+package rules;
+import com.sbz.battleship.web.dto.PlayerDto;
+import com.sbz.battleship.domain.model.Game;
+import com.sbz.battleship.domain.model.Games;
+import com.sbz.battleship.repository.GameRepository;
+import com.sbz.battleship.domain.model.enums.Status;
+import java.util.List;
+
+rule "Insert games"
+	lock-on-active
+	when
+		$player: PlayerDto( status == null )
+		$gameRepository: GameRepository()
+	then
+		insert( new Games($gameRepository.findAllByPlayerId( $player.getId())) );
+end
+rule "Player is golden"
+    no-loop
+    when
+    	$player: PlayerDto( status == null )
+        Games( $games: games, games.size() > 0 )
+        $count: Number(intValue >= 3 ) from accumulate(
+            $game: Game( winner != null, winner ) from $games,
+            count($game)
+        )
+    then
+    	System.out.println($player.getNick() + " je zlatan - pobedio je " + $count +" !");
+    	$player.setStatus(Status.GOLDEN);
+end
+rule "Player is silver"
+    no-loop
+    when
+    	$player: PlayerDto( status == null )
+        Games( $games: games, games.size() > 0 )
+        $count: Number( 2 <= intValue, intValue < 3  ) from accumulate(
+            $game: Game( winner != null, winner ) from $games,
+            count($game)
+        )
+    then
+    	System.out.println($player.getNick() + " je srebrn - pobedio je " + $count +" !");
+    	$player.setStatus(Status.SILVER);
+end
+rule "Player is bronze"
+    no-loop
+    when
+    	$player: PlayerDto( status == null )
+        Games( $games: games, games.size() > 0 )
+        $count: Number( 1 <= intValue, intValue < 2 ) from accumulate(
+            $game: Game( winner != null, winner ) from $games,
+            count($game)
+        )
+    then
+    	System.out.println($player.getNick() + " je bronzan - pobedio je " + $count +" !");
+    	$player.setStatus(Status.BRONZE);
+end
+rule "Player is none"
+    no-loop
+    when
+    	$player: PlayerDto( status == null )
+        Games( $games: games, games.size() > 0 )
+        $count: Number( intValue <= 1 ) from accumulate(
+            $game: Game( winner != null, winner ) from $games,
+            count($game)
+        )
+    then
+    	System.out.println($player.getNick() + " je nista - pobedio je " + $count +" !");
+    	$player.setStatus(Status.NONE);
+end
+
+

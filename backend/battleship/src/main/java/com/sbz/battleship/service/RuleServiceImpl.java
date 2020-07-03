@@ -11,8 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.sbz.battleship.domain.exception.InternalServerError;
 import com.sbz.battleship.repository.RulesHandler;
-import com.sbz.battleship.web.dto.AfkRuleDto;
-import com.sbz.battleship.web.dto.SignInRuleDto;
+import com.sbz.battleship.web.dto.StatusDto;
 
 @Service
 public class RuleServiceImpl implements RuleService{
@@ -24,15 +23,17 @@ public class RuleServiceImpl implements RuleService{
 		this.rulesHandler = rulesHandler;
 	}
 	
-    private String extractRuleForAfk(AfkRuleDto afkRule) {
+    private String extractRuleForStatus(StatusDto statusDto) {
 
         Map<String, Object> data = new HashMap<>();
         
-        data.put("playerRegular", afkRule.getPlayerRegular());
-        data.put("playerExtended", afkRule.getPlayerExtended());
+        data.put("golden", statusDto.getGolden());
+        data.put("silver", statusDto.getSilver());
+        data.put("bronze", statusDto.getBronze());
 
 
-        String templateName = "move-classes";
+
+        String templateName = "status-template";
         ObjectDataCompiler objectDataCompiler = new ObjectDataCompiler();
 
         String ruleContent = objectDataCompiler.compile(
@@ -43,48 +44,19 @@ public class RuleServiceImpl implements RuleService{
         return ruleContent;
     }
     
-    private String extractRuleForSignIn(SignInRuleDto signIn) {
 
-        Map<String, Object> data = new HashMap<>();
-        
-        data.put("n", signIn.getN());
-        data.put("denieTime", signIn.getDenieTime());
-        data.put("failTime", signIn.getFailTime());
-
-
-
-        String templateName = "signIn";
-        ObjectDataCompiler objectDataCompiler = new ObjectDataCompiler();
-
-        String ruleContent = objectDataCompiler.compile(
-                Collections.singletonList(data),
-                Thread.currentThread().getContextClassLoader().getResourceAsStream("templates/" + templateName + ".drt")
-        );
-
-        return ruleContent;
-    }
     
     @Override
-    public void createAfk(AfkRuleDto afkRule) throws InternalServerError {
-    	String rule = this.extractRuleForAfk(afkRule);
+    public void createStatus(StatusDto statusDto) throws InternalServerError {
+    	String rule = this.extractRuleForStatus(statusDto);
     	try {
-			this.rulesHandler.evaluate(rule, "move classes");
+			this.rulesHandler.evaluate(rule, "status");
 		} catch (IOException | MavenInvocationException e) {
 			e.printStackTrace();
 			throw new InternalServerError(e.getMessage());
 		}
     }
     
-    @Override
-    public void createSignIn(SignInRuleDto signIn) throws InternalServerError {
-    	String rule = this.extractRuleForSignIn(signIn);
-    	try {
-			this.rulesHandler.evaluate(rule, "signIn");
-		} catch (IOException | MavenInvocationException e) {
-			e.printStackTrace();
-			throw new InternalServerError(e.getMessage());
-		}
-    }
 
 	
 	

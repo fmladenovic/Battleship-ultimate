@@ -2,7 +2,7 @@
     <div class="row ">
         <div class="col-md-1"></div>
         <div class="col-md-2 story-wrapper">
-            <div class="story">
+            <div class="story" [ngClass] = "{'golden': status === 'GOLDEN', 'silver': status === 'SILVER', 'bronze': status === 'BRONZE'}">
                 <div class="upper">
                     <p>
                         Prepare for battle!
@@ -30,7 +30,7 @@
             </div>
         </div>
         <div class="col-md-8 content-wrapper">
-            <div class="content">
+            <div class="content" [ngClass] = "{'golden': status === 'GOLDEN', 'silver': status === 'SILVER', 'bronze': status === 'BRONZE'}">
                 <div class="player-first-phase">  
                     <app-board-first-phase
                         [ship] = "ship"

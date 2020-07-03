@@ -26,6 +26,9 @@ export class GamePhaseTwoComponent implements OnInit {
   gameStatus: GameStatus;
   showSpinner: boolean;
 
+  status: string;
+
+
   constructor(
     private gameService: GameService,
     private spinnerService: SpinnerService
@@ -33,6 +36,9 @@ export class GamePhaseTwoComponent implements OnInit {
 
   ngOnInit() {
     this.gameService.playerPickStatus();
+    this.gameService.game.subscribe( data => this.status = data.player.status );
+    console.log(this.status);
+
     this.gameService.gameStatus.subscribe( data => this.gameStatus = data );
     this.spinnerService.spinner.subscribe( data => this.showSpinner = data );
   }

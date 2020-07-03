@@ -9,8 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sbz.battleship.domain.exception.InternalServerError;
 import com.sbz.battleship.service.RuleService;
-import com.sbz.battleship.web.dto.AfkRuleDto;
-import com.sbz.battleship.web.dto.SignInRuleDto;
+import com.sbz.battleship.web.dto.StatusDto;
 
 @RestController
 @RequestMapping(value = "api/rules")
@@ -24,27 +23,16 @@ public class RuleController {
 	}
 	
     @RequestMapping(
-            path= "/afk",
+            path= "/status",
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<?> createAfk(
-            @RequestBody AfkRuleDto request
+    public ResponseEntity<?> createStatus(
+            @RequestBody StatusDto request
     ) throws InternalServerError {
-        this.ruleService.createAfk(request);
+        this.ruleService.createStatus(request);
         return ResponseEntity.ok().build(); 
     }
     
-    @RequestMapping(
-            path= "/signin",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<?> createSignIn(
-            @RequestBody SignInRuleDto request
-    ) throws InternalServerError {
-        this.ruleService.createSignIn(request);
-        return ResponseEntity.ok().build();
-    }
 
 }

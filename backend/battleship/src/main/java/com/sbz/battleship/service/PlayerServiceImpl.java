@@ -158,11 +158,21 @@ public class PlayerServiceImpl implements PlayerService {
         player.getGames().add(game);
         this.playerRepository.save(player);
 
-        PlayerDto playerDto = new PlayerDto(player.getId(), player.getEmail(), player.getNick());
+        PlayerDto playerDto = new PlayerDto();
+        playerDto.setId(player.getId());
+        playerDto.setEmail(player.getEmail());
+        playerDto.setNick(player.getNick());
+        
+        kieSession.insert(playerDto);
+        kieSession.insert(this.gameRepository);
+        kieSession.fireAllRules();
+        System.out.print(playerDto.getStatus());
+        
         GameDto gameDto = new GameDto(id, playerDto, game.getPlayerMoves(), game.getPlayerShips(),
                 game.getComputerMoves(), game.getComputerShips(), null);
         return gameDto;
     }
+    
 
     @Override
     public GameDto playAgain(String playerId) throws BadRequest, NotFound {
@@ -203,7 +213,15 @@ public class PlayerServiceImpl implements PlayerService {
         player.getGames().add(game);
         this.playerRepository.save(player);
 
-        PlayerDto playerDto = new PlayerDto(player.getId(), player.getEmail(), player.getNick());
+        PlayerDto playerDto = new PlayerDto();
+        playerDto.setId(player.getId());
+        playerDto.setEmail(player.getEmail());
+        playerDto.setNick(player.getNick());
+        
+        kieSession.insert(playerDto);
+        kieSession.insert(this.gameRepository);
+        kieSession.fireAllRules();
+        
         GameDto gameDto = new GameDto(id, playerDto, game.getPlayerMoves(), game.getPlayerShips(),
                 game.getComputerMoves(), game.getComputerShips(), null);
         return gameDto;

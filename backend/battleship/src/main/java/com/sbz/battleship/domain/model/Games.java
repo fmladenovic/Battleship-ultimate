@@ -1,5 +1,7 @@
-package com.sbz.battleship.web.dto;
+package com.sbz.battleship.domain.model;
 
+import java.util.List;
+import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,9 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class SignInRuleDto {
+public class Games {
 
-	private Integer n;
-	private Integer denieTime;
-	private Integer failTime;
+	private List<Game> games;
 }
