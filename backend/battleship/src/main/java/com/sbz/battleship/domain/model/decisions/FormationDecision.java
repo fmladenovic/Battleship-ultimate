@@ -22,16 +22,16 @@ public class FormationDecision {
 
 
     private Formation computerLastUsedFormation; // for ship positions
-    private Set<Formation> computerMostUsedFormations; //set
+    private Set<Formation> computerMostUsedFormations;
 
-    private List<Tuple> dangerPositions; //or maybe 10
+    private List<Tuple> dangerPositions;
 
     private boolean readyForDecision = false;
     private Ships decision;
 
     public Formation getRandomFromSet() {
         int size = computerFormations.size();
-        int item = new Random().nextInt(size); // In real life, the Random object should be rather more shared than this
+        int item = new Random().nextInt(size);
         int i = 0;
         for(Formation obj : computerFormations)
         {

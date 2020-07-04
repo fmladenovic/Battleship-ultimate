@@ -110,8 +110,8 @@ public class GameServiceImpl implements GameService {
                 player.getMostCommonShipPosition(),
                 game.getComputerMoves(),
                 null,
-                false, // TODO: FALSE!!!!!!!!!!!!
-                false  // TODO: FALSE!!!!!!!!!!!!
+                false,
+                false
         );
         KieSession kieSession = this.kContainer.newKieSession("session");
         kieSession.setGlobal("forRecheckMoves", new ArrayList<Move>());

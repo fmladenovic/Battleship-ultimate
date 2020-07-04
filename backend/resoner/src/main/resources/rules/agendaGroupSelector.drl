@@ -12,7 +12,7 @@ rule "First play"
         )
     then
         $d.setDecision(AgendaGroup.FINDING_ENEMY);
-        System.out.println("Protivnikova prva partija, prvi putez!");
+        System.out.println("Protivnikova prva partija, prvi potez!");
         System.out.println("----------------------------------------------------------------------------------------------------------------");
         update( $d );
 end
